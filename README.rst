@@ -16,9 +16,9 @@
 django-issue
 ===============
 
+An app for tracking ongoing issues within your web application.
 
-I have failed to provide a good README.rst in my project, and you should shun
-me if I do any pull requests
+In a nutshell: a ticketing system for your software!
 
 Installation
 ------------
