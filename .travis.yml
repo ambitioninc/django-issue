@@ -1,0 +1,20 @@
+language: python
+python:
+  - '2.7'
+  - '3.3'
+  - '3.4'
+env:
+  global:
+    - DB=postgres
+  matrix:
+    - DJANGO=1.6.5
+install:
+  - pip install -q coveralls coverage flake8 Django==$DJANGO
+before_script:
+  - psql -c 'CREATE DATABASE issue;' -U postgres
+script:
+  - flake8 .
+  - coverage run setup.py test
+  - coverage report --fail-under=100
+after_success:
+  coveralls
