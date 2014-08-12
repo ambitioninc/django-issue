@@ -143,7 +143,7 @@ class ResponderAction(models.Model):
         try:
             execution_successful = load_function(self.target_function)(issue, **self.function_kwargs)
             details = self.construct_details(execution_successful)
-        except Exception, e:
+        except Exception as e:
             details = self.construct_details(False, str(e))
 
         issue.add_comment(details=details, comment_type=CommentType.Action.value)
