@@ -31,7 +31,8 @@ class ExtendedEnumTests(TestCase):
         self.assertEqual(2, ExtendedEnumTests.TestEnum.name_to_value('green'))
 
     def test_choices(self):
-        self.assertEqual([(1, 'red'), (2, 'green'), (3, 'blue')], ExtendedEnumTests.TestEnum.choices())
+        self.assertEqual(
+            set([(1, 'red'), (2, 'green'), (3, 'blue')]), set(ExtendedEnumTests.TestEnum.choices()))
 
 
 class NoteTests(TestCase):
