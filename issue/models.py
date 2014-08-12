@@ -69,6 +69,9 @@ class Issue(Note):
         return u'Issue: {name} - {status}'.format(name=self.name, status=IssueStatus(self.status))
 
     def add_comment(self, **kwargs):
+        """
+        Create an IssueComment refering to this Issue.
+        """
         return IssueComment.objects.create(issue=self, **kwargs)
 
 
@@ -138,7 +141,7 @@ class ResponderAction(models.Model):
 
     def execute(self, issue):
         """
-        Execute the action that this record represents.
+        Execute the configured action.
         """
         try:
             execution_successful = load_function(self.target_function)(issue, **self.function_kwargs)
@@ -184,7 +187,7 @@ class Assertion(models.Model):
         if not all_is_well:
             self._open_issue(issue_name, issue_details)
         else:
-            self._close_open_issue(issue_name, issue_details)
+            self._close_open_issue(issue_name)
 
         return all_is_well
 
@@ -198,5 +201,8 @@ class Assertion(models.Model):
                 'status': IssueStatus.Open.value,
             })
 
-    def _close_open_issue(self, issue_name, issue_details):
+    def _close_open_issue(self, issue_name):
+        """
+        Close any issues with this name.
+        """
         Issue.objects.filter(name=issue_name).update(status=IssueStatus.Resolved.value)

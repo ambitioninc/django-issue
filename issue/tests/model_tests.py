@@ -265,7 +265,7 @@ class AssertionTests(TestCase):
         assertion = G(Assertion, check_function='issue.tests.model_tests.load_function')
 
         self.assertTrue(assertion.check())
-        close_open_issue.assert_called_with(issue_name, issue_details)
+        close_open_issue.assert_called_with(issue_name)
 
     @patch.object(Assertion, '_open_issue', spec_set=True)
     @patch('issue.models.load_function', spec_set=True)
@@ -298,5 +298,5 @@ class AssertionTests(TestCase):
 
     def test_close_open_issue(self):
         issue = G(Issue, status=IssueStatus.Open.value)
-        Assertion()._close_open_issue(issue.name, {})
+        Assertion()._close_open_issue(issue.name)
         self.assertEqual(IssueStatus.Resolved.value, Issue.objects.get(pk=issue.pk).status)
