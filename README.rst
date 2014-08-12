@@ -33,7 +33,7 @@ To install the latest code directly from source, type::
 Documentation
 =============
 
-Full documentation is available at http://issue.readthedocs.org
+Full documentation is available at http://django-issue.readthedocs.org
 
 License
 =======

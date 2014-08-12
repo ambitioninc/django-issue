@@ -29,6 +29,9 @@ class ExtendedEnum(Enum):
 # Core Issue models
 #######################################################
 class IssueStatus(ExtendedEnum):
+    """
+    Enum listing possible Status values for an Issue.
+    """
     Open = 0
     Resolved = 1
     Wont_fix = 2
@@ -52,13 +55,19 @@ class Note(models.Model):
 
 
 class IssueManager(ManagerUtilsManager):
+    """
+    Custom model manager for the Issue model.
+    """
     def get_open_issues(self):
+        """
+        Retrive a queryset of all Open Issues.
+        """
         return self.filter(status=IssueStatus.Open.value)
 
 
 class Issue(Note):
     """
-    A particular issue/problem in the application that is possibly ongoing.
+    Particular problems or issues that the system needs should keep a record of.
     """
     status = models.IntegerField(choices=IssueStatus.choices(), default=IssueStatus.Open.value)
     resolved_timestamp = models.DateTimeField(null=True, blank=True)
@@ -91,7 +100,16 @@ class IssueComment(Note):
 #######################################################
 class Responder(models.Model):
     """
-    This class implements a response to an issue.
+    When an Issue is created, there is often an appropriate response.
+
+    A Responder record encodes a particular type of Issue to watch for and what actions
+    to take when an Issue is opened.
+
+    Examples might be emailing an admin, opening a ticket in PagerDuty, or running a bit
+    of code to fix a problem.
+
+    The actions to be taken are implemented as ResponderActions that ForeignKey to a particular
+    Responder record.
     """
     watch_pattern = RegexField(max_length=128)
 
@@ -100,7 +118,9 @@ class Responder(models.Model):
 
     def respond(self, issue):
         """
-        If the provided issue's name matches the watch_pattern, execute the actions for this Response.
+        Check if the provided issue matches our watch pattern.
+
+        If it does, execute the associated ResponderActions.
         """
         if self._match(issue.name):
             self._execute(issue)
@@ -173,7 +193,11 @@ class ResponderAction(models.Model):
 class Assertion(models.Model):
     """
     A class for tracking that certain properties of the web application are true.
-    When they are not true, an Issue is created to note this.
+
+    When an Assertion fails, an Issue is created to note this.
+
+    Think of it as a cross between the classic 'assert' statement and a traditional software monitoring
+    solution, like 'Nagios'.
     """
     # Class do we check to verify everything is copacetic?
     check_function = models.TextField()
