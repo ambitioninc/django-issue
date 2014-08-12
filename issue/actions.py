@@ -5,7 +5,6 @@ def email(issue, subject, recipients, message_txt=None, message_html=None, reply
     """
     """
     message_txt = message_txt or ''
-    message_html = message_html or message_txt
     reply_address = reply_address or ''
 
     email = EmailMultiAlternatives(subject, message_txt, reply_address, recipients)

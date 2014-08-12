@@ -133,8 +133,8 @@ class ResponderAction(models.Model):
     function_kwargs = JSONField(default={})
 
     def __unicode__(self):
-        return u'ResponderAction: {responder}, {target_function}'.format(
-            responder=self.responder, target_function=self.target_function)
+        return u'ResponderAction: {responder} - {target_function} - {function_kwargs}'.format(
+            responder=self.responder, target_function=self.target_function, function_kwargs=self.function_kwargs)
 
     def execute(self, issue):
         """

@@ -186,8 +186,11 @@ class ResponderTests(TestCase):
 
 class ResponderActionTests(TestCase):
     def test__unicode(self):
-        ic = IssueComment(name='a-comment-name', issue=N(Issue, name='an-issue-name'))
-        self.assertEqual('IssueComment: an-issue-name - a-comment-name', ic.__unicode__())
+        r = G(ResponderAction)
+        self.assertEqual(
+            'ResponderAction: {responder} - {target_function} - {function_kwargs}'.format(
+                responder=r.responder, target_function=r.target_function, function_kwargs=r.function_kwargs),
+            r.__unicode__())
 
     @patch('issue.models.load_function', spec_set=True)
     def test_execute(self, load_function):
