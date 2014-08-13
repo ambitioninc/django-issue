@@ -8,30 +8,36 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'Note'
-        db.create_table(u'issue_note', (
+        # Adding model 'Issue'
+        db.create_table(u'issue_issue', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.TextField')()),
             ('details', self.gf('jsonfield.fields.JSONField')(null=True, blank=True)),
-            ('created_timestamp', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-        ))
-        db.send_create_signal(u'issue', ['Note'])
-
-        # Adding model 'Issue'
-        db.create_table(u'issue_issue', (
-            (u'note_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['issue.Note'], unique=True, primary_key=True)),
+            ('creation_time', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('status', self.gf('django.db.models.fields.IntegerField')(default=0)),
-            ('resolved_timestamp', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
+            ('resolved_time', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
         ))
         db.send_create_signal(u'issue', ['Issue'])
 
-        # Adding model 'IssueComment'
-        db.create_table(u'issue_issuecomment', (
-            (u'note_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['issue.Note'], unique=True, primary_key=True)),
-            ('issue', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['issue.Issue'])),
-            ('comment_type', self.gf('django.db.models.fields.IntegerField')(default=0)),
+        # Adding model 'IssueNote'
+        db.create_table(u'issue_issuenote', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('issue', self.gf('django.db.models.fields.related.ForeignKey')(related_name='notes', to=orm['issue.Issue'])),
+            ('details', self.gf('jsonfield.fields.JSONField')(null=True, blank=True)),
+            ('creation_time', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
         ))
-        db.send_create_signal(u'issue', ['IssueComment'])
+        db.send_create_signal(u'issue', ['IssueNote'])
+
+        # Adding model 'IssueAction'
+        db.create_table(u'issue_issueaction', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('issue', self.gf('django.db.models.fields.related.ForeignKey')(related_name='executed_actions', to=orm['issue.Issue'])),
+            ('responder_action', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['issue.ResponderAction'])),
+            ('execution_time', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('success', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('details', self.gf('jsonfield.fields.JSONField')(null=True, blank=True)),
+        ))
+        db.send_create_signal(u'issue', ['IssueAction'])
 
         # Adding model 'Responder'
         db.create_table(u'issue_responder', (
@@ -44,7 +50,7 @@ class Migration(SchemaMigration):
         db.create_table(u'issue_responderaction', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('responder', self.gf('django.db.models.fields.related.ForeignKey')(related_name='actions', to=orm['issue.Responder'])),
-            ('action_order', self.gf('django.db.models.fields.IntegerField')()),
+            ('delay_sec', self.gf('django.db.models.fields.IntegerField')()),
             ('target_function', self.gf('django.db.models.fields.TextField')()),
             ('function_kwargs', self.gf('jsonfield.fields.JSONField')(default={})),
         ))
@@ -59,14 +65,14 @@ class Migration(SchemaMigration):
 
 
     def backwards(self, orm):
-        # Deleting model 'Note'
-        db.delete_table(u'issue_note')
-
         # Deleting model 'Issue'
         db.delete_table(u'issue_issue')
 
-        # Deleting model 'IssueComment'
-        db.delete_table(u'issue_issuecomment')
+        # Deleting model 'IssueNote'
+        db.delete_table(u'issue_issuenote')
+
+        # Deleting model 'IssueAction'
+        db.delete_table(u'issue_issueaction')
 
         # Deleting model 'Responder'
         db.delete_table(u'issue_responder')
@@ -85,23 +91,29 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
         },
         u'issue.issue': {
-            'Meta': {'object_name': 'Issue', '_ormbases': [u'issue.Note']},
-            u'note_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['issue.Note']", 'unique': 'True', 'primary_key': 'True'}),
-            'resolved_timestamp': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'status': ('django.db.models.fields.IntegerField', [], {'default': '0'})
-        },
-        u'issue.issuecomment': {
-            'Meta': {'object_name': 'IssueComment', '_ormbases': [u'issue.Note']},
-            'comment_type': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
-            'issue': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['issue.Issue']"}),
-            u'note_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['issue.Note']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        u'issue.note': {
-            'Meta': {'object_name': 'Note'},
-            'created_timestamp': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'Meta': {'object_name': 'Issue'},
+            'creation_time': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'details': ('jsonfield.fields.JSONField', [], {'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.TextField', [], {})
+            'name': ('django.db.models.fields.TextField', [], {}),
+            'resolved_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
+            'status': ('django.db.models.fields.IntegerField', [], {'default': '0'})
+        },
+        u'issue.issueaction': {
+            'Meta': {'object_name': 'IssueAction'},
+            'details': ('jsonfield.fields.JSONField', [], {'null': 'True', 'blank': 'True'}),
+            'execution_time': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'issue': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'executed_actions'", 'to': u"orm['issue.Issue']"}),
+            'responder_action': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['issue.ResponderAction']"}),
+            'success': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
+        },
+        u'issue.issuenote': {
+            'Meta': {'object_name': 'IssueNote'},
+            'creation_time': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'details': ('jsonfield.fields.JSONField', [], {'null': 'True', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'issue': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'notes'", 'to': u"orm['issue.Issue']"})
         },
         u'issue.responder': {
             'Meta': {'object_name': 'Responder'},
@@ -110,7 +122,7 @@ class Migration(SchemaMigration):
         },
         u'issue.responderaction': {
             'Meta': {'object_name': 'ResponderAction'},
-            'action_order': ('django.db.models.fields.IntegerField', [], {}),
+            'delay_sec': ('django.db.models.fields.IntegerField', [], {}),
             'function_kwargs': ('jsonfield.fields.JSONField', [], {'default': '{}'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'responder': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'actions'", 'to': u"orm['issue.Responder']"}),

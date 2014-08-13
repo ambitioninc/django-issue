@@ -7,22 +7,12 @@ django_issue
 .. automodule: issue
 
 =============
-Misc classes
-=============
-.. _ref-note:
-.. autoclass:: issue.Note
-    :members:
-
-=============
 Issue classes
 =============
 
 .. _ref-issue:
 .. autoclass:: issue.Issue
     :members:
-
-This class inherits from the :ref:`Note class <ref-note>`.
-
 .. autoclass:: issue.IssueManager
     :members:
 .. autoclass:: issue.IssueStatus

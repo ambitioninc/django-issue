@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+import json
 
 from django.db import models
 from django.utils.module_loading import import_by_path
@@ -37,23 +38,6 @@ class IssueStatus(ExtendedEnum):
     Wont_fix = 2
 
 
-class CommentType(ExtendedEnum):
-    Note = 0
-    Action = 1
-
-
-class Note(models.Model):
-    """
-    Generic class for recording some event in the database.
-    """
-    name = models.TextField()
-    details = JSONField(null=True, blank=True)
-    created_timestamp = models.DateTimeField(auto_now_add=True)
-
-    def __unicode__(self):
-        return u'Note: {name}'.format(name=self.name)
-
-
 class IssueManager(ManagerUtilsManager):
     """
     Custom model manager for the Issue model.
@@ -65,34 +49,49 @@ class IssueManager(ManagerUtilsManager):
         return self.filter(status=IssueStatus.Open.value)
 
 
-class Issue(Note):
+class Issue(models.Model):
     """
     Particular problems or issues that the system needs should keep a record of.
     """
+    name = models.TextField()
+    details = JSONField(null=True, blank=True)
+    creation_time = models.DateTimeField(auto_now_add=True)
     status = models.IntegerField(choices=IssueStatus.choices(), default=IssueStatus.Open.value)
-    resolved_timestamp = models.DateTimeField(null=True, blank=True)
+    resolved_time = models.DateTimeField(null=True, blank=True)
 
     objects = IssueManager()
 
     def __unicode__(self):
         return u'Issue: {name} - {status}'.format(name=self.name, status=IssueStatus(self.status))
 
-    def add_comment(self, **kwargs):
-        """
-        Create an IssueComment refering to this Issue.
-        """
-        return IssueComment.objects.create(issue=self, **kwargs)
 
-
-class IssueComment(Note):
+class IssueNote(models.Model):
     """
     A note about a particular issue.
     """
-    issue = models.ForeignKey(Issue)
-    comment_type = models.IntegerField(choices=CommentType.choices(), default=CommentType.Note.value)
+    issue = models.ForeignKey(Issue, related_name='notes')
+    details = JSONField(null=True, blank=True)
+    creation_time = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
-        return u'IssueComment: {issue.name} - {name}'.format(issue=self.issue, name=self.name)
+        return u'IssueNote: {issue.name} - {details}'.format(issue=self.issue, details=self.details)
+
+
+class IssueAction(models.Model):
+    """
+    A response that was taken to address a particular issue.
+    """
+    issue = models.ForeignKey(Issue, related_name='executed_actions')
+    responder_action = models.ForeignKey('issue.ResponderAction')
+    execution_time = models.DateTimeField(auto_now_add=True)
+    success = models.BooleanField(default=True)
+    details = JSONField(null=True, blank=True)
+
+    def __unicode__(self):
+        return (
+            u'IssueResponse: {self.issue.name} - {self.responder_action} - '
+            '{self.success} at {self.execution_time}'.format(self=self)
+        )
 
 
 #######################################################
@@ -135,21 +134,29 @@ class Responder(models.Model):
         """
         Execute in order all of the ResponderActions associated with this Responder.
         """
-        for a in self.actions.order_by('action_order'):
-            if not a.execute(issue):
-                return False
-        else:
-            return True
+        IssueAction.objects.bulk_create(
+            [
+                a.execute(issue) for a in self._get_pending_actions_for_issue(issue)
+                if a.is_time_to_execute(issue)
+            ])
+
+    def _get_pending_actions_for_issue(self, issue):
+        already_executed_action_pks = issue.executed_actions.values_list('responder_action__pk', flat=True).all()
+
+        return self.actions.exclude(pk__in=already_executed_action_pks).order_by('delay_sec')
 
 
 class ResponderAction(models.Model):
     """
     A particular action to take in response to some Issue.
+
+    Any function can be specified in the target_function field, though some initial
+    helpers are defined in issue.actions
     """
     responder = models.ForeignKey(Responder, related_name='actions')
 
-    # What order this action should be taken in?
-    action_order = models.IntegerField()
+    # 'buffer' period between this action and the next.
+    delay_sec = models.IntegerField()
 
     # What action do we want to occur
     target_function = models.TextField()
@@ -159,31 +166,37 @@ class ResponderAction(models.Model):
         return u'ResponderAction: {responder} - {target_function} - {function_kwargs}'.format(
             responder=self.responder, target_function=self.target_function, function_kwargs=self.function_kwargs)
 
+    @property
+    def delay(self):
+        return timedelta(seconds=self.delay_sec)
+
+    def is_time_to_execute(self, issue):
+        """
+        A ResponseAction is only executable if enough time has passed since the previous action.
+        """
+        return (issue.creation_time + self.delay) <= datetime.utcnow()
+
     def execute(self, issue):
         """
         Execute the configured action.
         """
         try:
-            execution_successful = load_function(self.target_function)(issue, **self.function_kwargs)
-            details = self.construct_details(execution_successful)
+            details = load_function(self.target_function)(issue, **self.function_kwargs)
+            kwargs = self.construct_issue_action_kwargs(True, details)
         except Exception as e:
-            details = self.construct_details(False, str(e))
+            kwargs = self.construct_issue_action_kwargs(False, str(e))
 
-        issue.add_comment(details=details, comment_type=CommentType.Action.value)
+        return IssueAction(issue=issue, **kwargs)
 
-        return details['ResponderAction']['success']
-
-    def construct_details(self, success, failure_details=None):
+    def construct_issue_action_kwargs(self, success, failure_details=None):
         """
         Construct a summary of this action execution.
         """
         return {
-            'ResponderAction': {
-                'success': success,
-                'execution_time': int(datetime.utcnow().strftime('%s')),
-                'target_function': self.target_function,
-                'failure_details': failure_details
-            }
+            'responder_action': self,
+            'execution_time': str(datetime.utcnow()),
+            'success': success,
+            'details': json.dumps(failure_details),
         }
 
 
