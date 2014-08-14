@@ -11,13 +11,15 @@ Issue classes
 =============
 
 .. _ref-issue:
+.. autoclass:: issue.IssueStatus
+    :members:
 .. autoclass:: issue.Issue
     :members:
 .. autoclass:: issue.ModelIssue
     :members:
 .. autoclass:: issue.IssueManager
     :members:
-.. autoclass:: issue.IssueStatus
+.. autoclass:: issue.ModelIssueManager
     :members:
 
 

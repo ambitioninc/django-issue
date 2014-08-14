@@ -64,9 +64,15 @@ class IssueManager(ManagerUtilsManager):
         self.filter(**kwargs).update(status=IssueStatus.Open.value)
 
     def is_wont_fix(self, **kwargs):
+        """
+        Does the specified issue exist with a status of Wont_fix?
+        """
         return self.filter(status=IssueStatus.Wont_fix.value, **kwargs).exists()
 
     def close_issue(self, **kwargs):
+        """
+        Resolve the specified issue.
+        """
         self.filter(**kwargs).update(status=IssueStatus.Resolved.value)
 
 
@@ -100,7 +106,7 @@ class ModelIssueManager(IssueManager):
 
     def issue_exists(self, *args, **kwargs):
         """
-        Does any issue of the given name exist?
+        Does an Issue of the given name exist?
         """
         kwargs = self._replace_record_with_content_type(kwargs)
 
@@ -115,11 +121,17 @@ class ModelIssueManager(IssueManager):
         return super(ModelIssueManager, self).reopen_issue(*args, **kwargs)
 
     def is_wont_fix(self, *args, **kwargs):
+        """
+        Does the specified issue exist with a status of Wont_fix?
+        """
         kwargs = self._replace_record_with_content_type(kwargs)
 
         return super(ModelIssueManager, self).is_wont_fix(*args, **kwargs)
 
     def close_issue(self, *args, **kwargs):
+        """
+        Resolve the specified issue.
+        """
         kwargs = self._replace_record_with_content_type(kwargs)
 
         return super(ModelIssueManager, self).close_issue(*args, **kwargs)
