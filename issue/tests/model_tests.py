@@ -6,7 +6,7 @@ from freezegun import freeze_time
 from mock import patch
 
 from issue.models import (
-    Assertion, ExtendedEnum, Issue, IssueNote, IssueAction, IssueStatus, Responder, ResponderAction,
+    Assertion, ExtendedEnum, Issue, IssueAction, IssueStatus, Responder, ResponderAction,
     load_function,
 )
 
@@ -47,12 +47,6 @@ class IssueTests(TestCase):
     def test__unicode__(self):
         i = Issue(name='an-issue', status=IssueStatus.Resolved.value)
         self.assertEqual('Issue: an-issue - IssueStatus.Resolved', i.__unicode__())
-
-
-class IssueNoteTests(TestCase):
-    def test__unicode__(self):
-        ic = IssueNote(issue=N(Issue, name='an-issue-name'), details={'foo': 'bar'})
-        self.assertEqual('IssueNote: an-issue-name - {\'foo\': \'bar\'}', ic.__unicode__())
 
 
 class IssueActionTests(TestCase):

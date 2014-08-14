@@ -65,18 +65,6 @@ class Issue(models.Model):
         return u'Issue: {name} - {status}'.format(name=self.name, status=IssueStatus(self.status))
 
 
-class IssueNote(models.Model):
-    """
-    A note about a particular issue.
-    """
-    issue = models.ForeignKey(Issue, related_name='notes')
-    details = JSONField(null=True, blank=True)
-    creation_time = models.DateTimeField(auto_now_add=True)
-
-    def __unicode__(self):
-        return u'IssueNote: {issue.name} - {details}'.format(issue=self.issue, details=self.details)
-
-
 class IssueAction(models.Model):
     """
     A response that was taken to address a particular issue.

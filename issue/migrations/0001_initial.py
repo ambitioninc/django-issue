@@ -19,15 +19,6 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'issue', ['Issue'])
 
-        # Adding model 'IssueNote'
-        db.create_table(u'issue_issuenote', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('issue', self.gf('django.db.models.fields.related.ForeignKey')(related_name='notes', to=orm['issue.Issue'])),
-            ('details', self.gf('jsonfield.fields.JSONField')(null=True, blank=True)),
-            ('creation_time', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-        ))
-        db.send_create_signal(u'issue', ['IssueNote'])
-
         # Adding model 'IssueAction'
         db.create_table(u'issue_issueaction', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -68,9 +59,6 @@ class Migration(SchemaMigration):
         # Deleting model 'Issue'
         db.delete_table(u'issue_issue')
 
-        # Deleting model 'IssueNote'
-        db.delete_table(u'issue_issuenote')
-
         # Deleting model 'IssueAction'
         db.delete_table(u'issue_issueaction')
 
@@ -107,13 +95,6 @@ class Migration(SchemaMigration):
             'issue': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'executed_actions'", 'to': u"orm['issue.Issue']"}),
             'responder_action': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['issue.ResponderAction']"}),
             'success': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
-        },
-        u'issue.issuenote': {
-            'Meta': {'object_name': 'IssueNote'},
-            'creation_time': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'details': ('jsonfield.fields.JSONField', [], {'null': 'True', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'issue': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'notes'", 'to': u"orm['issue.Issue']"})
         },
         u'issue.responder': {
             'Meta': {'object_name': 'Responder'},
