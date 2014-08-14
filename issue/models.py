@@ -1,6 +1,9 @@
+from copy import copy
 from datetime import datetime, timedelta
 import json
 
+from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.module_loading import import_by_path
 from enum import Enum
@@ -48,6 +51,24 @@ class IssueManager(ManagerUtilsManager):
         """
         return self.filter(status=IssueStatus.Open.value)
 
+    def issue_exists(self, **kwargs):
+        """
+        Does any issue of the given name exist?
+        """
+        return self.filter(**kwargs).exists()
+
+    def reopen_issue(self, **kwargs):
+        """
+        Reopen the specified Issue.
+        """
+        self.filter(**kwargs).update(status=IssueStatus.Open.value)
+
+    def is_wont_fix(self, **kwargs):
+        return self.filter(status=IssueStatus.Wont_fix.value, **kwargs).exists()
+
+    def close_issue(self, **kwargs):
+        self.filter(**kwargs).update(status=IssueStatus.Resolved.value)
+
 
 class Issue(models.Model):
     """
@@ -63,6 +84,56 @@ class Issue(models.Model):
 
     def __unicode__(self):
         return u'Issue: {name} - {status}'.format(name=self.name, status=IssueStatus(self.status))
+
+
+class ModelIssueManager(IssueManager):
+    def _replace_record_with_content_type(self, kwargs):
+        kwargs = copy(kwargs)
+        record = kwargs.pop('record', None)
+
+        if record:
+            kwargs['record_id'], kwargs['record_type'] = (
+                record.id, ContentType.objects.get_for_model(record)
+            )
+
+        return kwargs
+
+    def issue_exists(self, *args, **kwargs):
+        """
+        Does any issue of the given name exist?
+        """
+        kwargs = self._replace_record_with_content_type(kwargs)
+
+        return super(ModelIssueManager, self).issue_exists(*args, **kwargs)
+
+    def reopen_issue(self, *args, **kwargs):
+        """
+        Reopen the specified Issue.
+        """
+        kwargs = self._replace_record_with_content_type(kwargs)
+
+        return super(ModelIssueManager, self).reopen_issue(*args, **kwargs)
+
+    def is_wont_fix(self, *args, **kwargs):
+        kwargs = self._replace_record_with_content_type(kwargs)
+
+        return super(ModelIssueManager, self).is_wont_fix(*args, **kwargs)
+
+    def close_issue(self, *args, **kwargs):
+        kwargs = self._replace_record_with_content_type(kwargs)
+
+        return super(ModelIssueManager, self).close_issue(*args, **kwargs)
+
+
+class ModelIssue(Issue):
+    """
+    An issue involving a particular entry in the database.
+    """
+    record_type = models.ForeignKey(ContentType, related_name='+', null=True)
+    record_id = models.PositiveIntegerField(default=0)
+    record = generic.GenericForeignKey('record_type', 'record_id')
+
+    objects = ModelIssueManager()
 
 
 class IssueAction(models.Model):
@@ -203,31 +274,72 @@ class Assertion(models.Model):
     # Class do we check to verify everything is copacetic?
     check_function = models.TextField()
 
-    def check(self):
+    # Assertion name; also the name of any Issue created
+    name = models.TextField()
+
+    @property
+    def issue_class(self):
+        return Issue
+
+    def check(self, *args, **kwargs):
         """
         Run the configured check to detect problems and create or resolve issues as needed.
         """
-        (all_is_well, issue_name, issue_details) = load_function(self.check_function)()
+        (all_is_well, details) = load_function(self.check_function)(**kwargs)
 
         if not all_is_well:
-            self._open_issue(issue_name, issue_details)
+            kwargs['details'] = details
+            self._open_or_update_issue(**kwargs)
         else:
-            self._close_open_issue(issue_name)
+            self._close_open_issue(**kwargs)
 
         return all_is_well
 
-    def _open_issue(self, name, details):
+    def _open_or_update_issue(self, details, **kwargs):
         """
         Open (or re-open) an issue with the name unless one exists with a status of Wont_fix.
         """
-        if not Issue.objects.filter(name=name, status=IssueStatus.Wont_fix.value).exists():
-            return Issue.objects.upsert(name=name, updates={
-                'details': details,
-                'status': IssueStatus.Open.value,
-            })
+        obj_man = self.issue_class.objects
 
-    def _close_open_issue(self, issue_name):
+        if not obj_man.issue_exists(name=self.name, **kwargs):
+            return obj_man.create(name=self.name, **kwargs)
+
+        elif not obj_man.is_wont_fix(name=self.name, **kwargs):
+            return obj_man.reopen_issue(name=self.name, **kwargs)
+
+    def _close_open_issue(self, **kwargs):
         """
         Close any issues with this name.
         """
-        Issue.objects.filter(name=issue_name).update(status=IssueStatus.Resolved.value)
+        self.issue_class.objects.close_issue(name=self.name, **kwargs)
+
+
+class ModelAssertion(Assertion):
+    """
+    A class for making assertions about models.
+
+    An Issue is created for any record for which the assertion fails.
+    """
+    model_type = models.ForeignKey(ContentType, related_name='+')
+
+    @property
+    def issue_class(self):
+        return ModelIssue
+
+    @property
+    def queryset(self):
+        """
+        Queryset of records to iterate over.
+        """
+        return self.model_type.model_class().objects.all()
+
+    def check(self, **kwargs):
+        """
+        Run the configured check against all records in the queryset to detect problems.
+
+        Returns True if the assertion holds true for all records of the configured model type.
+        """
+        def check_record(record):
+            return super(ModelAssertion, self).check(record=record, **kwargs)
+
+        return all(map(check_record, self.queryset))

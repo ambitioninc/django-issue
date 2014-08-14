@@ -1,18 +1,23 @@
 from datetime import datetime, timedelta
 
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django_dynamic_fixture import G, N
 from freezegun import freeze_time
 from mock import patch
 
 from issue.models import (
-    Assertion, ExtendedEnum, Issue, IssueAction, IssueStatus, Responder, ResponderAction,
+    Assertion, ExtendedEnum, Issue, IssueAction, IssueStatus, ModelAssertion, ModelIssue, Responder, ResponderAction,
     load_function,
 )
 
 
 def function_to_load(self, *args, **kwargs):
     pass
+
+
+def is_even_number(record):
+    return ((int(record.name) % 2) == 0, {})
 
 
 class LoadFucntionTests(TestCase):
@@ -41,6 +46,53 @@ class IssueManagerTests(TestCase):
         G(Issue, status=IssueStatus.Resolved.value)
         i3 = G(Issue)
         self.assertEqual(set(Issue.objects.get_open_issues()), set([i, i3]))
+
+    def test_reopen_issue(self):
+        mi = G(Issue, status=IssueStatus.Resolved.value)
+
+        Issue.objects.reopen_issue(name=mi.name)
+        self.assertEqual(IssueStatus.Open.value, Issue.objects.get(pk=mi.pk).status)
+
+    def test_is_wont_fix(self):
+        mi = G(Issue, status=IssueStatus.Wont_fix.value)
+
+        self.assertTrue(Issue.objects.is_wont_fix(name=mi.name))
+
+
+class ModelIssueManagerTests(TestCase):
+    def test_replace_record_with_content_type(self):
+        record = N(Issue)
+
+        kwargs = {
+            'record': record,
+        }
+        expected_kwargs = {
+            'record_id': record.id,
+            'record_type': ContentType.objects.get_for_model(record),
+        }
+
+        self.assertEqual(
+            expected_kwargs, ModelIssue.objects._replace_record_with_content_type(kwargs))
+
+    def test_replace_record_with_content_type_with_no_record(self):
+        self.assertEqual({}, ModelIssue.objects._replace_record_with_content_type({}))
+
+    def test_reopen_issue(self):
+        record = G(Issue)
+        mi = G(
+            ModelIssue, record_id=record.id, record_type=ContentType.objects.get_for_model(record),
+            status=IssueStatus.Resolved.value)
+
+        ModelIssue.objects.reopen_issue(name=mi.name, record=mi.record)
+        self.assertEqual(IssueStatus.Open.value, ModelIssue.objects.get(pk=mi.pk).status)
+
+    def test_is_wont_fix(self):
+        record = G(Issue)
+        mi = G(
+            ModelIssue, record_id=record.id, record_type=ContentType.objects.get_for_model(record),
+            status=IssueStatus.Wont_fix.value)
+
+        self.assertTrue(ModelIssue.objects.is_wont_fix(name=mi.name, record=mi.record))
 
 
 class IssueTests(TestCase):
@@ -345,47 +397,94 @@ class AssertionTests(TestCase):
     @patch.object(Assertion, '_close_open_issue', spec_set=True)
     @patch('issue.models.load_function', spec_set=True)
     def test_check_when_all_is_well(self, load_function, close_open_issue):
-        issue_name = 'an-issue'
         issue_details = {
             'narg': 'baz',
         }
-        load_function.return_value.return_value = (True, issue_name, issue_details)
+        load_function.return_value.return_value = (True, issue_details)
 
         assertion = G(Assertion, check_function='issue.tests.model_tests.load_function')
 
         self.assertTrue(assertion.check())
-        close_open_issue.assert_called_with(issue_name)
+        self.assertTrue(close_open_issue.called)
 
-    @patch.object(Assertion, '_open_issue', spec_set=True)
+    @patch.object(Assertion, '_open_or_update_issue', spec_set=True)
     @patch('issue.models.load_function', spec_set=True)
-    def test_check_when_all_is_not_well(self, load_function, open_issue):
-        issue_name = 'an-issue'
+    def test_check_when_all_is_not_well(self, load_function, open_or_update_issue):
         issue_details = {
             'narg': 'baz',
         }
-        load_function.return_value.return_value = (False, issue_name, issue_details)
+        load_function.return_value.return_value = (False, issue_details)
 
         assertion = G(Assertion, check_function='issue.tests.model_tests.load_function')
 
         self.assertFalse(assertion.check())
-        open_issue.assert_called_with(issue_name, issue_details)
+        open_or_update_issue.assert_called_with(details=issue_details)
 
-    def test__open_issue_when_none_exists(self):
-        issue_name = 'an-issue'
-        Assertion()._open_issue(issue_name, {})
-        self.assertEqual(IssueStatus.Open.value, Issue.objects.get(name=issue_name).status)
+    def test__open_or_update_issue_when_none_exists(self):
+        a = G(Assertion)
+        a._open_or_update_issue({})
+        self.assertEqual(IssueStatus.Open.value, Issue.objects.get(name=a.name).status)
 
-    def test__open_issue_when_it_is_marked_as_wont_fix(self):
-        issue = G(Issue, status=IssueStatus.Wont_fix.value)
-        Assertion()._open_issue(issue.name, {})
+    def test__open_or_update_issue_when_it_is_marked_as_wont_fix(self):
+        a = G(Assertion)
+        issue = G(Issue, name=a.name, status=IssueStatus.Wont_fix.value)
+        a._open_or_update_issue({})
         self.assertEqual(IssueStatus.Wont_fix.value, Issue.objects.get(pk=issue.pk).status)
 
-    def test__open_issue_when_it_is_marked_as_resolved(self):
-        issue = G(Issue, status=IssueStatus.Resolved.value)
-        Assertion()._open_issue(issue.name, {})
+    def test__open_or_update_issue_when_it_is_marked_as_resolved(self):
+        a = G(Assertion)
+        issue = G(Issue, name=a.name, status=IssueStatus.Resolved.value)
+        a._open_or_update_issue({})
         self.assertEqual(IssueStatus.Open.value, Issue.objects.get(pk=issue.pk).status)
 
     def test_close_open_issue(self):
-        issue = G(Issue, status=IssueStatus.Open.value)
-        Assertion()._close_open_issue(issue.name)
+        a = G(Assertion)
+        issue = G(Issue, name=a.name, status=IssueStatus.Open.value)
+        a._close_open_issue()
         self.assertEqual(IssueStatus.Resolved.value, Issue.objects.get(pk=issue.pk).status)
+
+
+class ModelAssertionTests(TestCase):
+    def test_queryset(self):
+        am = G(Issue)
+        am2 = G(Issue)
+
+        ma = N(ModelAssertion, model_type=ContentType.objects.get_for_model(Issue))
+        self.assertEqual(set(ma.queryset), set([am, am2]))
+
+    def test_check_all_pass(self):
+        # Setup the scenario; we just need a random model in the database so we use an Issue in this case
+        G(Issue, name='0')
+        G(Issue, name='2')
+        G(Issue, name='4')
+
+        ma = N(
+            ModelAssertion, model_type=ContentType.objects.get_for_model(Issue),
+            check_function='issue.tests.model_tests.is_even_number')
+
+        # Run the code
+        r = ma.check()
+
+        # Verify expectations
+        self.assertTrue(r)
+        self.assertEqual(0, ModelIssue.objects.count())
+
+    def test_check_one_fails(self):
+        # Setup the scenario; we just need a random model in the database so we use an Issue in this case
+        G(Issue, name='0')
+        am1 = G(Issue, name='1')
+        G(Issue, name='2')
+
+        ma = N(
+            ModelAssertion, model_type=ContentType.objects.get_for_model(Issue),
+            check_function='issue.tests.model_tests.is_even_number')
+
+        # Run the code
+        r = ma.check()
+
+        # Verify expectations
+        self.assertFalse(r)
+        self.assertEqual(1, ModelIssue.objects.count())
+        self.assertTrue(
+            ModelIssue.objects.filter(
+                record_id=am1.id, record_type=ContentType.objects.get_for_model(Issue)).exists())

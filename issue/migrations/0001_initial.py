@@ -19,6 +19,14 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'issue', ['Issue'])
 
+        # Adding model 'ModelIssue'
+        db.create_table(u'issue_modelissue', (
+            (u'issue_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['issue.Issue'], unique=True, primary_key=True)),
+            ('record_type', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', null=True, to=orm['contenttypes.ContentType'])),
+            ('record_id', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
+        ))
+        db.send_create_signal(u'issue', ['ModelIssue'])
+
         # Adding model 'IssueAction'
         db.create_table(u'issue_issueaction', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -51,13 +59,24 @@ class Migration(SchemaMigration):
         db.create_table(u'issue_assertion', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('check_function', self.gf('django.db.models.fields.TextField')()),
+            ('name', self.gf('django.db.models.fields.TextField')()),
         ))
         db.send_create_signal(u'issue', ['Assertion'])
+
+        # Adding model 'ModelAssertion'
+        db.create_table(u'issue_modelassertion', (
+            (u'assertion_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['issue.Assertion'], unique=True, primary_key=True)),
+            ('model_type', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['contenttypes.ContentType'])),
+        ))
+        db.send_create_signal(u'issue', ['ModelAssertion'])
 
 
     def backwards(self, orm):
         # Deleting model 'Issue'
         db.delete_table(u'issue_issue')
+
+        # Deleting model 'ModelIssue'
+        db.delete_table(u'issue_modelissue')
 
         # Deleting model 'IssueAction'
         db.delete_table(u'issue_issueaction')
@@ -71,12 +90,23 @@ class Migration(SchemaMigration):
         # Deleting model 'Assertion'
         db.delete_table(u'issue_assertion')
 
+        # Deleting model 'ModelAssertion'
+        db.delete_table(u'issue_modelassertion')
+
 
     models = {
+        u'contenttypes.contenttype': {
+            'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
+            'app_label': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
+        },
         u'issue.assertion': {
             'Meta': {'object_name': 'Assertion'},
             'check_function': ('django.db.models.fields.TextField', [], {}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.TextField', [], {})
         },
         u'issue.issue': {
             'Meta': {'object_name': 'Issue'},
@@ -95,6 +125,17 @@ class Migration(SchemaMigration):
             'issue': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'executed_actions'", 'to': u"orm['issue.Issue']"}),
             'responder_action': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['issue.ResponderAction']"}),
             'success': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
+        },
+        u'issue.modelassertion': {
+            'Meta': {'object_name': 'ModelAssertion', '_ormbases': [u'issue.Assertion']},
+            u'assertion_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['issue.Assertion']", 'unique': 'True', 'primary_key': 'True'}),
+            'model_type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': u"orm['contenttypes.ContentType']"})
+        },
+        u'issue.modelissue': {
+            'Meta': {'object_name': 'ModelIssue', '_ormbases': [u'issue.Issue']},
+            u'issue_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['issue.Issue']", 'unique': 'True', 'primary_key': 'True'}),
+            'record_id': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
+            'record_type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'null': 'True', 'to': u"orm['contenttypes.ContentType']"})
         },
         u'issue.responder': {
             'Meta': {'object_name': 'Responder'},

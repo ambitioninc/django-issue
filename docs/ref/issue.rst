@@ -13,6 +13,8 @@ Issue classes
 .. _ref-issue:
 .. autoclass:: issue.Issue
     :members:
+.. autoclass:: issue.ModelIssue
+    :members:
 .. autoclass:: issue.IssueManager
     :members:
 .. autoclass:: issue.IssueStatus
@@ -25,6 +27,8 @@ Assertion Classes
 
 .. _ref-assertion:
 .. autoclass:: issue.Assertion
+    :members:
+.. autoclass:: issue.ModelAssertion
     :members:
 
 
