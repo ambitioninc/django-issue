@@ -1,10 +1,11 @@
 language: python
 python:
   - '2.7'
-  - '3.3'
-  - '3.4'
+addons:
+  postgresql: '9.3'
 env:
   global:
+    - NOSE_NOLOGCAPTURE=1
     - DB=postgres
   matrix:
     - DJANGO=1.6.5
