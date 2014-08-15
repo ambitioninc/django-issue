@@ -1,13 +1,46 @@
-.. _ref-issue:
-
 Code documentation
 ==================
 
-issue
+django_issue
 ------------------
 
-.. automodule:: issue
-.. autoclass:: issue.issue
+.. automodule: issue
+
+=============
+Issue classes
+=============
+
+.. _ref-issue:
+.. autoclass:: issue.IssueStatus
+    :members:
+.. autoclass:: issue.Issue
+    :members:
+.. autoclass:: issue.ModelIssue
+    :members:
+.. autoclass:: issue.IssueManager
+    :members:
+.. autoclass:: issue.ModelIssueManager
     :members:
 
-    .. automethod:: __init__
+
+=================
+Assertion Classes
+=================
+
+.. _ref-assertion:
+.. autoclass:: issue.Assertion
+    :members:
+.. autoclass:: issue.ModelAssertion
+    :members:
+
+
+=================
+Responder classes
+=================
+
+.. _ref-resopnder:
+.. autoclass:: issue.Responder
+    :members:
+
+.. autoclass:: issue.ResponderAction
+    :members:

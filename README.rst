@@ -16,9 +16,9 @@
 django-issue
 ===============
 
+An app for tracking ongoing issues within your web application.
 
-I have failed to provide a good README.rst in my project, and you should shun
-me if I do any pull requests
+In a nutshell: a ticketing system for use by software components!
 
 Installation
 ------------
@@ -33,7 +33,7 @@ To install the latest code directly from source, type::
 Documentation
 =============
 
-Full documentation is available at http://issue.readthedocs.org
+Full documentation is available at http://django-issue.readthedocs.org
 
 License
 =======
