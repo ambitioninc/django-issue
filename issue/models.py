@@ -76,10 +76,7 @@ class IssueManager(ManagerUtilsManager):
         self.filter(**kwargs).update(status=IssueStatus.Resolved.value)
 
 
-class Issue(models.Model):
-    """
-    Particular problems or issues that the system needs should keep a record of.
-    """
+class BaseIssue(models.Model):
     name = models.TextField()
     details = JSONField(null=True, blank=True)
     creation_time = models.DateTimeField(auto_now_add=True)
@@ -87,6 +84,9 @@ class Issue(models.Model):
     resolved_time = models.DateTimeField(null=True, blank=True)
 
     objects = IssueManager()
+
+    class Meta:
+        abstract = True
 
     def __unicode__(self):
         return u'Issue: {name} - {status}'.format(name=self.name, status=IssueStatus(self.status))
@@ -137,7 +137,14 @@ class ModelIssueManager(IssueManager):
         return super(ModelIssueManager, self).close_issue(*args, **kwargs)
 
 
-class ModelIssue(Issue):
+class Issue(BaseIssue):
+    """
+    Particular problems or issues that the system needs should keep a record of.
+    """
+    pass
+
+
+class ModelIssue(BaseIssue):
     """
     An issue involving a particular entry in the database.
     """
@@ -274,7 +281,7 @@ class ResponderAction(models.Model):
 #######################################################
 # Assertion models
 #######################################################
-class Assertion(models.Model):
+class BaseAssertion(models.Model):
     """
     A class for tracking that certain properties of the web application are true.
 
@@ -288,6 +295,9 @@ class Assertion(models.Model):
 
     # Assertion name; also the name of any Issue created
     name = models.TextField()
+
+    class Meta:
+        abstract = True
 
     @property
     def issue_class(self):
@@ -326,7 +336,11 @@ class Assertion(models.Model):
         self.issue_class.objects.close_issue(name=self.name, **kwargs)
 
 
-class ModelAssertion(Assertion):
+class Assertion(BaseAssertion):
+    pass
+
+
+class ModelAssertion(BaseAssertion):
     """
     A class for making assertions about models.
 

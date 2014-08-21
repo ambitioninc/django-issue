@@ -21,7 +21,12 @@ class Migration(SchemaMigration):
 
         # Adding model 'ModelIssue'
         db.create_table(u'issue_modelissue', (
-            (u'issue_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['issue.Issue'], unique=True, primary_key=True)),
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.TextField')()),
+            ('details', self.gf('jsonfield.fields.JSONField')(null=True, blank=True)),
+            ('creation_time', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('status', self.gf('django.db.models.fields.IntegerField')(default=0)),
+            ('resolved_time', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
             ('record_type', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', null=True, to=orm['contenttypes.ContentType'])),
             ('record_id', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
         ))
@@ -65,7 +70,9 @@ class Migration(SchemaMigration):
 
         # Adding model 'ModelAssertion'
         db.create_table(u'issue_modelassertion', (
-            (u'assertion_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['issue.Assertion'], unique=True, primary_key=True)),
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('check_function', self.gf('django.db.models.fields.TextField')()),
+            ('name', self.gf('django.db.models.fields.TextField')()),
             ('model_type', self.gf('django.db.models.fields.related.ForeignKey')(related_name='+', to=orm['contenttypes.ContentType'])),
         ))
         db.send_create_signal(u'issue', ['ModelAssertion'])
@@ -127,15 +134,22 @@ class Migration(SchemaMigration):
             'success': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
         },
         u'issue.modelassertion': {
-            'Meta': {'object_name': 'ModelAssertion', '_ormbases': [u'issue.Assertion']},
-            u'assertion_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['issue.Assertion']", 'unique': 'True', 'primary_key': 'True'}),
-            'model_type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': u"orm['contenttypes.ContentType']"})
+            'Meta': {'object_name': 'ModelAssertion'},
+            'check_function': ('django.db.models.fields.TextField', [], {}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'model_type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'to': u"orm['contenttypes.ContentType']"}),
+            'name': ('django.db.models.fields.TextField', [], {})
         },
         u'issue.modelissue': {
-            'Meta': {'object_name': 'ModelIssue', '_ormbases': [u'issue.Issue']},
-            u'issue_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['issue.Issue']", 'unique': 'True', 'primary_key': 'True'}),
+            'Meta': {'object_name': 'ModelIssue'},
+            'creation_time': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'details': ('jsonfield.fields.JSONField', [], {'null': 'True', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.TextField', [], {}),
             'record_id': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
-            'record_type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'null': 'True', 'to': u"orm['contenttypes.ContentType']"})
+            'record_type': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'+'", 'null': 'True', 'to': u"orm['contenttypes.ContentType']"}),
+            'resolved_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
+            'status': ('django.db.models.fields.IntegerField', [], {'default': '0'})
         },
         u'issue.responder': {
             'Meta': {'object_name': 'Responder'},
