@@ -148,6 +148,29 @@ class ResponderTests(TestCase):
         self.assertTrue(r._match('error-42'))
         self.assertFalse(r._match('success'))
 
+    def test__get_pending_actions_for_issue(self):
+        # Setup the scenario
+        now = datetime(2014, 8, 11, 15, 0, 0)
+        delta = timedelta(minutes=30)
+        r = G(Responder)
+        ra = G(ResponderAction, responder=r, delay_sec=delta.total_seconds())
+        issue = G(Issue, creation_time=now - (delta * 2))
+
+        # Run the code and verify expectation
+        self.assertEqual(ra, r._get_pending_actions_for_issue(issue).get())
+
+    def test__get_pending_actions_for_issue_ignores_executed_actions(self):
+        # Setup the scenario
+        now = datetime(2014, 8, 11, 15, 0, 0)
+        delta = timedelta(minutes=30)
+        r = G(Responder)
+        ra = G(ResponderAction, responder=r, delay_sec=delta.total_seconds())
+        issue = G(Issue, creation_time=now - (delta * 2))
+        G(IssueAction, issue=issue, responder_action=ra)
+
+        # Run the code and verify expectation
+        self.assertFalse(r._get_pending_actions_for_issue(issue).exists())
+
     @patch('issue.models.load_function', spec_set=True)
     def test__execute_all_success(self, load_function):
         # Setup the scenario
