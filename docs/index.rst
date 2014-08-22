@@ -180,3 +180,9 @@ There is a helper function, :func:`build_responder` for constructing a :class:`R
 
 The :attr:`delay_sec` may be ommitted; when this happens the ResponderAction will be executed as soon as the Responder matches against an Issue.
 
+
+============================
+When do these checks happen?
+============================
+
+Two management commands are provided, :command:`check_assertions` and :command:`respond_to_issues` which should be ran periodically.
