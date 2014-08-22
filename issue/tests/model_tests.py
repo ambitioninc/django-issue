@@ -10,6 +10,7 @@ from issue.models import (
     Assertion, ExtendedEnum, Issue, IssueAction, IssueStatus, ModelAssertion, ModelIssue, Responder, ResponderAction,
     load_function,
 )
+from issue.tests.models import TestModel
 
 
 def function_to_load(self, *args, **kwargs):
@@ -61,7 +62,7 @@ class IssueManagerTests(TestCase):
 
 class ModelIssueManagerTests(TestCase):
     def test_replace_record_with_content_type(self):
-        record = N(Issue)
+        record = N(TestModel)
 
         kwargs = {
             'record': record,
@@ -78,7 +79,7 @@ class ModelIssueManagerTests(TestCase):
         self.assertEqual({}, ModelIssue.objects._replace_record_with_content_type({}))
 
     def test_reopen_issue(self):
-        record = G(Issue)
+        record = G(TestModel)
         mi = G(
             ModelIssue, record_id=record.id, record_type=ContentType.objects.get_for_model(record),
             status=IssueStatus.Resolved.value)
@@ -87,7 +88,7 @@ class ModelIssueManagerTests(TestCase):
         self.assertEqual(IssueStatus.Open.value, ModelIssue.objects.get(pk=mi.pk).status)
 
     def test_is_wont_fix(self):
-        record = G(Issue)
+        record = G(TestModel)
         mi = G(
             ModelIssue, record_id=record.id, record_type=ContentType.objects.get_for_model(record),
             status=IssueStatus.Wont_fix.value)
@@ -469,20 +470,19 @@ class AssertionTests(TestCase):
 
 class ModelAssertionTests(TestCase):
     def test_queryset(self):
-        am = G(Issue)
-        am2 = G(Issue)
+        am = G(TestModel)
+        am2 = G(TestModel)
 
-        ma = N(ModelAssertion, model_type=ContentType.objects.get_for_model(Issue))
+        ma = N(ModelAssertion, model_type=ContentType.objects.get_for_model(TestModel))
         self.assertEqual(set(ma.queryset), set([am, am2]))
 
     def test_check_all_pass(self):
-        # Setup the scenario; we just need a random model in the database so we use an Issue in this case
-        G(Issue, name='0')
-        G(Issue, name='2')
-        G(Issue, name='4')
+        G(TestModel, name='0')
+        G(TestModel, name='2')
+        G(TestModel, name='4')
 
         ma = N(
-            ModelAssertion, model_type=ContentType.objects.get_for_model(Issue),
+            ModelAssertion, model_type=ContentType.objects.get_for_model(TestModel),
             check_function='issue.tests.model_tests.is_even_number')
 
         # Run the code
@@ -493,13 +493,12 @@ class ModelAssertionTests(TestCase):
         self.assertEqual(0, ModelIssue.objects.count())
 
     def test_check_one_fails(self):
-        # Setup the scenario; we just need a random model in the database so we use an Issue in this case
+        am1 = G(TestModel, name='1')
         G(Issue, name='0')
-        am1 = G(Issue, name='1')
-        G(Issue, name='2')
+        G(Issue, name='1')
 
         ma = N(
-            ModelAssertion, model_type=ContentType.objects.get_for_model(Issue),
+            ModelAssertion, model_type=ContentType.objects.get_for_model(TestModel),
             check_function='issue.tests.model_tests.is_even_number')
 
         # Run the code
@@ -510,4 +509,4 @@ class ModelAssertionTests(TestCase):
         self.assertEqual(1, ModelIssue.objects.count())
         self.assertTrue(
             ModelIssue.objects.filter(
-                record_id=am1.id, record_type=ContentType.objects.get_for_model(Issue)).exists())
+                record_id=am1.id, record_type=ContentType.objects.get_for_model(TestModel)).exists())
