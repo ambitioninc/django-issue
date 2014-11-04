@@ -69,7 +69,7 @@ class IssueManager(ManagerUtilsManager):
         """
         return self.filter(status=IssueStatus.Wont_fix.value, **kwargs).exists()
 
-    def close_issue(self, **kwargs):
+    def resolve_issue(self, **kwargs):
         """
         Resolve the specified issue.
         """
@@ -146,7 +146,7 @@ class ModelIssueManager(IssueManager):
         """
         kwargs = self._replace_record_with_content_type(kwargs)
 
-        return super(ModelIssueManager, self).close_issue(*args, **kwargs)
+        return super(ModelIssueManager, self).resolve_issue(*args, **kwargs)
 
 
 class Issue(BaseIssue):
@@ -325,7 +325,7 @@ class BaseAssertion(models.Model):
             kwargs['details'] = details
             self._open_or_update_issue(**kwargs)
         else:
-            self._close_open_issue(**kwargs)
+            self._resolve_open_issue(**kwargs)
 
         return all_is_well
 
@@ -341,11 +341,11 @@ class BaseAssertion(models.Model):
         elif not obj_man.is_wont_fix(name=self.name, **kwargs):
             return obj_man.reopen_issue(name=self.name, **kwargs)
 
-    def _close_open_issue(self, **kwargs):
+    def _resolve_open_issue(self, **kwargs):
         """
-        Close any issues with this name.
+        Resolve any issues with this name.
         """
-        self.issue_class.objects.close_issue(name=self.name, **kwargs)
+        self.issue_class.objects.resolve_issue(name=self.name, **kwargs)
 
 
 class Assertion(BaseAssertion):

@@ -102,6 +102,24 @@ class IssueTests(TestCase):
         i = Issue(name='an-issue', status=IssueStatus.Resolved.value)
         self.assertEqual('Issue: an-issue - IssueStatus.Resolved', i.__unicode__())
 
+    def test__is_open(self):
+        i = N(Issue, status=IssueStatus.Open.value)
+        self.assertTrue(i.is_open)
+        self.assertFalse(i.is_resolved)
+        self.assertFalse(i.is_wont_fix)
+
+    def test__is_resolved(self):
+        i = N(Issue, status=IssueStatus.Resolved.value)
+        self.assertTrue(i.is_resolved)
+        self.assertFalse(i.is_open)
+        self.assertFalse(i.is_wont_fix)
+
+    def test__is_wont_fix(self):
+        i = N(Issue, status=IssueStatus.Wont_fix.value)
+        self.assertTrue(i.is_wont_fix)
+        self.assertFalse(i.is_resolved)
+        self.assertFalse(i.is_open)
+
 
 class IssueActionTests(TestCase):
     def test__unicode__(self):
@@ -420,9 +438,9 @@ class ResponderActionTests(TestCase):
 
 
 class AssertionTests(TestCase):
-    @patch.object(Assertion, '_close_open_issue', spec_set=True)
+    @patch.object(Assertion, '_resolve_open_issue', spec_set=True)
     @patch('issue.models.load_function', spec_set=True)
-    def test_check_when_all_is_well(self, load_function, close_open_issue):
+    def test_check_when_all_is_well(self, load_function, resolve_open_issue):
         issue_details = {
             'narg': 'baz',
         }
@@ -431,7 +449,7 @@ class AssertionTests(TestCase):
         assertion = G(Assertion, check_function='issue.tests.model_tests.load_function')
 
         self.assertTrue(assertion.check())
-        self.assertTrue(close_open_issue.called)
+        self.assertTrue(resolve_open_issue.called)
 
     @patch.object(Assertion, '_open_or_update_issue', spec_set=True)
     @patch('issue.models.load_function', spec_set=True)
@@ -463,10 +481,10 @@ class AssertionTests(TestCase):
         a._open_or_update_issue({})
         self.assertEqual(IssueStatus.Open.value, Issue.objects.get(pk=issue.pk).status)
 
-    def test_close_open_issue(self):
+    def test_resolve_open_issue(self):
         a = G(Assertion)
         issue = G(Issue, name=a.name, status=IssueStatus.Open.value)
-        a._close_open_issue()
+        a._resolve_open_issue()
         self.assertEqual(IssueStatus.Resolved.value, Issue.objects.get(pk=issue.pk).status)
 
 
