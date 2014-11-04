@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import json
 
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
@@ -324,7 +325,7 @@ class ResponderTests(TestCase):
         self.assertTrue(IssueAction.objects.filter(issue=issue, responder_action=ra2).exists())
         self.assertTrue(IssueAction.objects.filter(issue=issue, responder_action=ra3).exists())
         self.assertEqual(
-            str(Exception('what-an-exceptional-message')),
+            json.dumps(str(Exception('what-an-exceptional-message'))),
             IssueAction.objects.get(issue=issue, responder_action=ra2).details)
 
 
@@ -385,7 +386,8 @@ class ResponderActionTests(TestCase):
         load_function.return_value.assert_called_with(issue, foo='bar')
 
         self.assertTrue(IssueAction.objects.filter(issue=issue, **expected_issue_action_kwargs).exists())
-        self.assertIsNone(IssueAction.objects.get().details)
+        # The 'None' that is stored as the details is first json encoded
+        self.assertEqual(json.dumps(None), IssueAction.objects.get().details)
 
     @patch('issue.models.load_function', spec_set=True)
     def test_execute_with_failure(self, load_function):
@@ -414,7 +416,7 @@ class ResponderActionTests(TestCase):
         load_function.return_value.assert_called_with(issue, foo='bar')
 
         self.assertTrue(IssueAction.objects.filter(issue=issue, **expected_issue_action_kwargs).exists())
-        self.assertEqual(str(Exception('what-an-exceptional-message')), IssueAction.objects.get().details)
+        self.assertEqual(json.dumps(str(Exception('what-an-exceptional-message'))), IssueAction.objects.get().details)
 
 
 class AssertionTests(TestCase):
