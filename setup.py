@@ -53,6 +53,8 @@ setup(
         'django-nose',
         'freezegun>=0.1.12',
         'mock>=1.0.1',
+        'ipdb==0.8',
+        'ipdbplugin==1.4',
     ],
     test_suite='run_tests.run_tests',
     include_package_data=True,
