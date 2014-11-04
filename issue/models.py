@@ -96,7 +96,7 @@ class BaseIssue(models.Model):
         return self.status == IssueStatus.Open.value
 
     @property
-    def is_closed(self):
+    def is_resolved(self):
         return self.status == IssueStatus.Resolved.value
 
     @property
@@ -140,7 +140,7 @@ class ModelIssueManager(IssueManager):
 
         return super(ModelIssueManager, self).is_wont_fix(*args, **kwargs)
 
-    def close_issue(self, *args, **kwargs):
+    def resolve_issue(self, *args, **kwargs):
         """
         Resolve the specified issue.
         """
