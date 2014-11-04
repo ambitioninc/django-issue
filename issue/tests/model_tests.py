@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import json
 
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
@@ -10,6 +11,7 @@ from issue.models import (
     Assertion, ExtendedEnum, Issue, IssueAction, IssueStatus, ModelAssertion, ModelIssue, Responder, ResponderAction,
     load_function,
 )
+from issue.tests.models import TestModel
 
 
 def function_to_load(self, *args, **kwargs):
@@ -61,7 +63,7 @@ class IssueManagerTests(TestCase):
 
 class ModelIssueManagerTests(TestCase):
     def test_replace_record_with_content_type(self):
-        record = N(Issue)
+        record = N(TestModel)
 
         kwargs = {
             'record': record,
@@ -78,7 +80,7 @@ class ModelIssueManagerTests(TestCase):
         self.assertEqual({}, ModelIssue.objects._replace_record_with_content_type({}))
 
     def test_reopen_issue(self):
-        record = G(Issue)
+        record = G(TestModel)
         mi = G(
             ModelIssue, record_id=record.id, record_type=ContentType.objects.get_for_model(record),
             status=IssueStatus.Resolved.value)
@@ -87,7 +89,7 @@ class ModelIssueManagerTests(TestCase):
         self.assertEqual(IssueStatus.Open.value, ModelIssue.objects.get(pk=mi.pk).status)
 
     def test_is_wont_fix(self):
-        record = G(Issue)
+        record = G(TestModel)
         mi = G(
             ModelIssue, record_id=record.id, record_type=ContentType.objects.get_for_model(record),
             status=IssueStatus.Wont_fix.value)
@@ -147,6 +149,29 @@ class ResponderTests(TestCase):
         r = Responder(watch_pattern='error-.*')
         self.assertTrue(r._match('error-42'))
         self.assertFalse(r._match('success'))
+
+    def test__get_pending_actions_for_issue(self):
+        # Setup the scenario
+        now = datetime(2014, 8, 11, 15, 0, 0)
+        delta = timedelta(minutes=30)
+        r = G(Responder)
+        ra = G(ResponderAction, responder=r, delay_sec=delta.total_seconds())
+        issue = G(Issue, creation_time=now - (delta * 2))
+
+        # Run the code and verify expectation
+        self.assertEqual(ra, r._get_pending_actions_for_issue(issue).get())
+
+    def test__get_pending_actions_for_issue_ignores_executed_actions(self):
+        # Setup the scenario
+        now = datetime(2014, 8, 11, 15, 0, 0)
+        delta = timedelta(minutes=30)
+        r = G(Responder)
+        ra = G(ResponderAction, responder=r, delay_sec=delta.total_seconds())
+        issue = G(Issue, creation_time=now - (delta * 2))
+        G(IssueAction, issue=issue, responder_action=ra)
+
+        # Run the code and verify expectation
+        self.assertFalse(r._get_pending_actions_for_issue(issue).exists())
 
     @patch('issue.models.load_function', spec_set=True)
     def test__execute_all_success(self, load_function):
@@ -300,7 +325,7 @@ class ResponderTests(TestCase):
         self.assertTrue(IssueAction.objects.filter(issue=issue, responder_action=ra2).exists())
         self.assertTrue(IssueAction.objects.filter(issue=issue, responder_action=ra3).exists())
         self.assertEqual(
-            str(Exception('what-an-exceptional-message')),
+            json.dumps(str(Exception('what-an-exceptional-message'))),
             IssueAction.objects.get(issue=issue, responder_action=ra2).details)
 
 
@@ -361,7 +386,8 @@ class ResponderActionTests(TestCase):
         load_function.return_value.assert_called_with(issue, foo='bar')
 
         self.assertTrue(IssueAction.objects.filter(issue=issue, **expected_issue_action_kwargs).exists())
-        self.assertIsNone(IssueAction.objects.get().details)
+        # The 'None' that is stored as the details is first json encoded
+        self.assertEqual(json.dumps(None), IssueAction.objects.get().details)
 
     @patch('issue.models.load_function', spec_set=True)
     def test_execute_with_failure(self, load_function):
@@ -390,7 +416,7 @@ class ResponderActionTests(TestCase):
         load_function.return_value.assert_called_with(issue, foo='bar')
 
         self.assertTrue(IssueAction.objects.filter(issue=issue, **expected_issue_action_kwargs).exists())
-        self.assertEqual(str(Exception('what-an-exceptional-message')), IssueAction.objects.get().details)
+        self.assertEqual(json.dumps(str(Exception('what-an-exceptional-message'))), IssueAction.objects.get().details)
 
 
 class AssertionTests(TestCase):
@@ -446,20 +472,19 @@ class AssertionTests(TestCase):
 
 class ModelAssertionTests(TestCase):
     def test_queryset(self):
-        am = G(Issue)
-        am2 = G(Issue)
+        am = G(TestModel)
+        am2 = G(TestModel)
 
-        ma = N(ModelAssertion, model_type=ContentType.objects.get_for_model(Issue))
+        ma = N(ModelAssertion, model_type=ContentType.objects.get_for_model(TestModel))
         self.assertEqual(set(ma.queryset), set([am, am2]))
 
     def test_check_all_pass(self):
-        # Setup the scenario; we just need a random model in the database so we use an Issue in this case
-        G(Issue, name='0')
-        G(Issue, name='2')
-        G(Issue, name='4')
+        G(TestModel, name='0')
+        G(TestModel, name='2')
+        G(TestModel, name='4')
 
         ma = N(
-            ModelAssertion, model_type=ContentType.objects.get_for_model(Issue),
+            ModelAssertion, model_type=ContentType.objects.get_for_model(TestModel),
             check_function='issue.tests.model_tests.is_even_number')
 
         # Run the code
@@ -470,13 +495,12 @@ class ModelAssertionTests(TestCase):
         self.assertEqual(0, ModelIssue.objects.count())
 
     def test_check_one_fails(self):
-        # Setup the scenario; we just need a random model in the database so we use an Issue in this case
+        am1 = G(TestModel, name='1')
         G(Issue, name='0')
-        am1 = G(Issue, name='1')
-        G(Issue, name='2')
+        G(Issue, name='1')
 
         ma = N(
-            ModelAssertion, model_type=ContentType.objects.get_for_model(Issue),
+            ModelAssertion, model_type=ContentType.objects.get_for_model(TestModel),
             check_function='issue.tests.model_tests.is_even_number')
 
         # Run the code
@@ -487,4 +511,4 @@ class ModelAssertionTests(TestCase):
         self.assertEqual(1, ModelIssue.objects.count())
         self.assertTrue(
             ModelIssue.objects.filter(
-                record_id=am1.id, record_type=ContentType.objects.get_for_model(Issue)).exists())
+                record_id=am1.id, record_type=ContentType.objects.get_for_model(TestModel)).exists())

@@ -40,10 +40,10 @@ setup(
     license='MIT',
     install_requires=[
         'django>=1.6',
+        'django-manager-utils>=0.6.0',
         'django-regex-field>=0.1.4',
         'enum34>=1.0',
         'jsonfield>=0.9.20',
-        'django-manager-utils>=0.6.0',
         'psycopg2',
         'south>=0.8.4',
     ],

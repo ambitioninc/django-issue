@@ -33,7 +33,7 @@ The problem is, your system doesn't know how it's supposed to behave.  So when i
 it doesn't realize that something is amiss and continues on it's way doing something terribly wrong.
 If the system had a more explicit notion of it's expected behavior, then it could try to correct deviations, or at the very least, to escalate to a human and ask for help.
 
-django-issue is an initial exploration into these ideas; how can we detect when things go wrong, represent the fact that they have gone wrong, and then respond to them.
+django-issue is an initial exploration into these ideas; how can we detect when things go wrong, represent the fact that they have gone wrong, and then respond to them?
 
 ========
 Examples
@@ -44,7 +44,7 @@ Examples
 Representing the fact that something is amiss
 =============================================
 
-Suppose an error occurs in the middle of night that needs to be addressed in the morning (but is not pressing enough to wake someone up).  We could do something like this::
+Suppose an error occurs in the middle of the night that needs to be addressed in the morning (but is not pressing enough to wake someone up).  We could do something like this::
 
     from isssue.models import Issue
 
@@ -108,7 +108,7 @@ to be notified if the user hasn't created a profile pic yet.  You have an app, '
         pic_url = models.URLField(null=True, blank=True)
 
 
-    def should_have_pic_by_name(record, **kwargs):
+    def should_have_pic_by_now(record, **kwargs):
         """
         Check if the specified user has a pic or still has time for one.
         """
@@ -130,7 +130,7 @@ Now you create an :class:`ModelAssertion` to call your :func:`check_for_recent_h
 
 
     ModelAssertion.objects.create(
-        target_function='profile.models.should_have_pic_by_name', name='Check for pic', model_type=ContentType.get_for_model(Profile))
+        target_function='profile.models.should_have_pic_by_now', name='Check for pic', model_type=ContentType.get_for_model(Profile))
 
 Now whenever a :class:`Uer` account (and associated :class:`Profile`) is created, an Issue is created if the user does not set a profile pic within 5 days.
 
@@ -180,3 +180,9 @@ There is a helper function, :func:`build_responder` for constructing a :class:`R
 
 The :attr:`delay_sec` may be ommitted; when this happens the ResponderAction will be executed as soon as the Responder matches against an Issue.
 
+
+============================
+When do these checks happen?
+============================
+
+Two management commands are provided, :command:`check_assertions` and :command:`respond_to_issues` which should be ran periodically.
