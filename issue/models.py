@@ -91,6 +91,18 @@ class BaseIssue(models.Model):
     def __unicode__(self):
         return u'Issue: {name} - {status}'.format(name=self.name, status=IssueStatus(self.status))
 
+    @property
+    def is_open(self):
+        return self.status == IssueStatus.Open.value
+
+    @property
+    def is_closed(self):
+        return self.status == IssueStatus.Resolved.value
+
+    @property
+    def is_wont_fix(self):
+        return self.status == IssueStatus.Wont_fix.value
+
 
 class ModelIssueManager(IssueManager):
     def _replace_record_with_content_type(self, kwargs):
