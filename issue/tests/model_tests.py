@@ -98,9 +98,9 @@ class ModelIssueManagerTests(TestCase):
 
 
 class IssueTests(TestCase):
-    def test__unicode__(self):
+    def test__str__(self):
         i = Issue(name='an-issue', status=IssueStatus.Resolved.value)
-        self.assertEqual('Issue: an-issue - IssueStatus.Resolved', i.__unicode__())
+        self.assertEqual('Issue: an-issue - IssueStatus.Resolved', str(i))
 
     def test__is_open(self):
         i = N(Issue, status=IssueStatus.Open.value)
@@ -122,17 +122,21 @@ class IssueTests(TestCase):
 
 
 class IssueActionTests(TestCase):
-    def test__unicode__(self):
+    def test__str__(self):
         ia = N(IssueAction)
         self.assertEqual(
-            u'IssueResponse: {self.issue.name} - {self.responder_action} - '
+            'IssueResponse: {self.issue.name} - {self.responder_action} - '
             '{self.success} at {self.execution_time}'.format(self=ia),
-            ia.__unicode__())
+            str(ia)
+        )
 
 
 class ResponderTests(TestCase):
-    def test__unicode__(self):
-        self.assertEqual('Responder: error-.*', Responder(watch_pattern='error-.*').__unicode__())
+    def test__str__(self):
+        self.assertEqual(
+            'Responder: error-.*',
+            str(Responder(watch_pattern='error-.*'))
+        )
 
     @patch('issue.models.load_function', spec_set=True)
     def test_respond(self, load_function):
@@ -348,12 +352,13 @@ class ResponderTests(TestCase):
 
 
 class ResponderActionTests(TestCase):
-    def test__unicode(self):
+    def test__str__(self):
         r = G(ResponderAction)
         self.assertEqual(
             'ResponderAction: {responder} - {target_function} - {function_kwargs}'.format(
                 responder=r.responder, target_function=r.target_function, function_kwargs=r.function_kwargs),
-            r.__unicode__())
+            str(r)
+        )
 
     def test_is_time_to_execute(self):
         # Setup the scenario
@@ -448,7 +453,7 @@ class AssertionTests(TestCase):
 
         assertion = G(Assertion, check_function='issue.tests.model_tests.load_function')
 
-        self.assertTrue(assertion.check())
+        self.assertTrue(assertion.check_assertion())
         self.assertTrue(resolve_open_issue.called)
 
     @patch.object(Assertion, '_open_or_update_issue', spec_set=True)
@@ -461,7 +466,7 @@ class AssertionTests(TestCase):
 
         assertion = G(Assertion, check_function='issue.tests.model_tests.load_function')
 
-        self.assertFalse(assertion.check())
+        self.assertFalse(assertion.check_assertion())
         open_or_update_issue.assert_called_with(details=issue_details)
 
     def test__open_or_update_issue_when_none_exists(self):
@@ -506,7 +511,7 @@ class ModelAssertionTests(TestCase):
             check_function='issue.tests.model_tests.is_even_number')
 
         # Run the code
-        r = ma.check()
+        r = ma.check_assertion()
 
         # Verify expectations
         self.assertTrue(r)
@@ -522,7 +527,7 @@ class ModelAssertionTests(TestCase):
             check_function='issue.tests.model_tests.is_even_number')
 
         # Run the code
-        r = ma.check()
+        r = ma.check_assertion()
 
         # Verify expectations
         self.assertFalse(r)

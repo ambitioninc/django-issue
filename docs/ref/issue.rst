@@ -2,7 +2,7 @@ Code documentation
 ==================
 
 django_issue
-------------------
+------------
 
 .. automodule: issue
 

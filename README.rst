@@ -5,16 +5,16 @@
     :target: https://coveralls.io/r/ambitioninc/django-issue?branch=develop
 
 .. image:: https://pypip.in/v/django-issue/badge.png
-    :target: https://crate.io/packages/django-issue/
+    :target: https://pypi.python.org/pypi/django-issue/
     :alt: Latest PyPI version
 
 .. image:: https://pypip.in/d/django-issue/badge.png
-    :target: https://crate.io/packages/django-issue/
+    :target: https://pypi.python.org/pypi/django-issue/
     :alt: Number of PyPI downloads
 
 
 django-issue
-===============
+============
 
 An app for tracking ongoing issues within your web application.
 
@@ -31,10 +31,10 @@ To install the latest code directly from source, type::
     pip install git+git://github.com/ambitioninc/django-issue.git
 
 Documentation
-=============
+-------------
 
 Full documentation is available at http://django-issue.readthedocs.org
 
 License
-=======
+-------
 MIT License (see LICENSE)

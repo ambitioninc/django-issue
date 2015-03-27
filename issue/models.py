@@ -15,6 +15,9 @@ from regex_field import RegexField
 #######################################################
 # Misc Utils
 #######################################################
+import six
+
+
 def load_function(dotted_path):
     return import_by_path(dotted_path)
 
@@ -75,7 +78,7 @@ class IssueManager(ManagerUtilsManager):
         """
         self.filter(**kwargs).update(status=IssueStatus.Resolved.value)
 
-
+@six.python_2_unicode_compatible
 class BaseIssue(models.Model):
     name = models.TextField()
     details = JSONField(null=True, blank=True)
@@ -88,8 +91,8 @@ class BaseIssue(models.Model):
     class Meta:
         abstract = True
 
-    def __unicode__(self):
-        return u'Issue: {name} - {status}'.format(name=self.name, status=IssueStatus(self.status))
+    def __str__(self):
+        return 'Issue: {name} - {status}'.format(name=self.name, status=IssueStatus(self.status))
 
     @property
     def is_open(self):
@@ -167,6 +170,7 @@ class ModelIssue(BaseIssue):
     objects = ModelIssueManager()
 
 
+@six.python_2_unicode_compatible
 class IssueAction(models.Model):
     """
     A response that was taken to address a particular issue.
@@ -177,9 +181,9 @@ class IssueAction(models.Model):
     success = models.BooleanField(default=True)
     details = JSONField(null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return (
-            u'IssueResponse: {self.issue.name} - {self.responder_action} - '
+            'IssueResponse: {self.issue.name} - {self.responder_action} - '
             '{self.success} at {self.execution_time}'.format(self=self)
         )
 
@@ -187,6 +191,7 @@ class IssueAction(models.Model):
 #######################################################
 # Issue Response models
 #######################################################
+@six.python_2_unicode_compatible
 class Responder(models.Model):
     """
     When an Issue is created, there is often an appropriate response.
@@ -200,10 +205,10 @@ class Responder(models.Model):
     The actions to be taken are implemented as ResponderActions that ForeignKey to a particular
     Responder record.
     """
-    watch_pattern = RegexField(max_length=128)
+    watch_pattern = RegexField(null=True, max_length=128)
 
-    def __unicode__(self):
-        return u'Responder: {watch_pattern.pattern}'.format(watch_pattern=self.watch_pattern)
+    def __str__(self):
+        return 'Responder: {watch_pattern.pattern}'.format(watch_pattern=self.watch_pattern)
 
     def respond(self, issue):
         """
@@ -236,6 +241,7 @@ class Responder(models.Model):
         return self.actions.exclude(pk__in=already_executed_action_pks).order_by('delay_sec')
 
 
+@six.python_2_unicode_compatible
 class ResponderAction(models.Model):
     """
     A particular action to take in response to some Issue.
@@ -252,8 +258,8 @@ class ResponderAction(models.Model):
     target_function = models.TextField()
     function_kwargs = JSONField(default={})
 
-    def __unicode__(self):
-        return u'ResponderAction: {responder} - {target_function} - {function_kwargs}'.format(
+    def __str__(self):
+        return 'ResponderAction: {responder} - {target_function} - {function_kwargs}'.format(
             responder=self.responder, target_function=self.target_function, function_kwargs=self.function_kwargs)
 
     @property
@@ -315,7 +321,7 @@ class BaseAssertion(models.Model):
     def issue_class(self):
         return Issue
 
-    def check(self, *args, **kwargs):
+    def check_assertion(self, *args, **kwargs):
         """
         Run the configured check to detect problems and create or resolve issues as needed.
         """
@@ -371,13 +377,13 @@ class ModelAssertion(BaseAssertion):
         """
         return self.model_type.model_class().objects.all()
 
-    def check(self, **kwargs):
+    def check_assertion(self, **kwargs):
         """
         Run the configured check against all records in the queryset to detect problems.
 
         Returns True if the assertion holds true for all records of the configured model type.
         """
         def check_record(record):
-            return super(ModelAssertion, self).check(record=record, **kwargs)
+            return super(ModelAssertion, self).check_assertion(record=record, **kwargs)
 
         return all(map(check_record, self.queryset))
