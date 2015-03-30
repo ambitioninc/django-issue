@@ -10,7 +10,7 @@ def check_assertions():
     failed_assertion_count = 0
 
     for assertion in chain(Assertion.objects.all(), ModelAssertion.objects.all()):
-        if not assertion.check():
+        if not assertion.check_assertion():
             failed_assertion_count += 1
     return failed_assertion_count
 
