@@ -78,6 +78,7 @@ class IssueManager(ManagerUtilsManager):
         """
         self.filter(**kwargs).update(status=IssueStatus.Resolved.value)
 
+
 @six.python_2_unicode_compatible
 class BaseIssue(models.Model):
     name = models.TextField()
