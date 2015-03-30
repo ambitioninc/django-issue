@@ -2,8 +2,10 @@
 branch = True
 omit =
     issue/migrations/*
+    issue/south_migrations/*
     issue/tests/*
     issue/version.py
+    issue/apps.py
 source = issue
 [report]
 exclude_lines =

@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+v1.0.0
+------
+* Added Django 1.7 compatability
+* ``ModelAssertion`` and ``BaseAssertion``'s ``.check()`` methods were renamed
+to ``check_assertion()``
+
 v0.1
 ----
 

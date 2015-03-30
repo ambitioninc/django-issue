@@ -8,8 +8,8 @@ from issue.check import check_assertions, respond_to_issues
 
 
 class CheckAssertionsTests(TestCase):
-    @patch.object(ModelAssertion, 'check', spec_set=True, return_value=False)
-    @patch.object(Assertion, 'check', spec_set=True, return_value=False)
+    @patch.object(ModelAssertion, 'check_assertion', spec_set=True, return_value=False)
+    @patch.object(Assertion, 'check_assertion', spec_set=True, return_value=False)
     def test_check_assertions_checks_assertions_and_model_assertions(self, assertion_check, model_assertion_check):
         # Setup the scenario
         Assertion.objects.create(name='an-assertion')
@@ -23,7 +23,7 @@ class CheckAssertionsTests(TestCase):
         self.assertTrue(assertion_check.called)
         self.assertTrue(model_assertion_check.called)
 
-    @patch.object(Assertion, 'check', spec_set=True, side_effect=[True, False])
+    @patch.object(Assertion, 'check_assertion', spec_set=True, side_effect=[True, False])
     def test_check_assertions_counts_only_failing(self, assertion_check):
         # Setup the scenario
         Assertion.objects.create(name='an-assertion')
