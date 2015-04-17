@@ -60,11 +60,12 @@ class IssueManager(ManagerUtilsManager):
         """
         return self.filter(**kwargs).exists()
 
-    def reopen_issue(self, **kwargs):
+    def reopen_issue(self, name, **kwargs):
         """
         Reopen the specified Issue.
         """
-        self.filter(**kwargs).update(status=IssueStatus.Open.value)
+        kwargs['status'] = IssueStatus.Open.value
+        self.filter(name=name).update(**kwargs)
 
     def is_wont_fix(self, **kwargs):
         """
