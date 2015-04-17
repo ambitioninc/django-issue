@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v1.0.2
+------
+* Tweak to the behavior of maybe_open_issue
+
 v1.0.1
 ------
 * Added a helper method, maybe_open_issue, to the IssueManager class
