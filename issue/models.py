@@ -78,6 +78,18 @@ class IssueManager(ManagerUtilsManager):
         """
         self.filter(**kwargs).update(status=IssueStatus.Resolved.value)
 
+    def maybe_open_issue(self, name, **kwargs):
+        """
+        Open the specified Issue unless:
+        1) It is already open
+        2) It already exists and is marked as Wont_fix
+        """
+        if not self.issue_exists(name=name, **kwargs):
+            return self.create(name=name, **kwargs)
+        elif not self.is_wont_fix(name=name, **kwargs):
+            return self.reopen_issue(name=name, **kwargs)
+        return None
+
 
 @six.python_2_unicode_compatible
 class BaseIssue(models.Model):
@@ -340,13 +352,7 @@ class BaseAssertion(models.Model):
         """
         Open (or re-open) an issue with the name unless one exists with a status of Wont_fix.
         """
-        obj_man = self.issue_class.objects
-
-        if not obj_man.issue_exists(name=self.name, **kwargs):
-            return obj_man.create(name=self.name, **kwargs)
-
-        elif not obj_man.is_wont_fix(name=self.name, **kwargs):
-            return obj_man.reopen_issue(name=self.name, **kwargs)
+        return self.issue_class.objects.maybe_open_issue(self.name, **kwargs)
 
     def _resolve_open_issue(self, **kwargs):
         """

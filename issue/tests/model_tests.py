@@ -60,6 +60,28 @@ class IssueManagerTests(TestCase):
 
         self.assertTrue(Issue.objects.is_wont_fix(name=mi.name))
 
+    def test_maybe_open_issue_when_none_exists(self):
+        issue = Issue.objects.maybe_open_issue(name='falafel')
+        self.assertEqual(IssueStatus.Open.value, Issue.objects.get(name=issue.name).status)
+
+    def test_maybe_open_issue_when_it_is_marked_as_wont_fix(self):
+        issue = G(Issue, status=IssueStatus.Wont_fix.value)
+        self.assertIsNone(Issue.objects.maybe_open_issue(name=issue.name))
+        self.assertEqual(IssueStatus.Wont_fix.value, Issue.objects.get(pk=issue.pk).status)
+        self.assertEqual(1, Issue.objects.filter(name=issue.name).count())
+
+    def maybe_open_issue_when_it_is_marked_as_resolved(self):
+        issue = G(Issue, status=IssueStatus.Resolved.value)
+        Issue.objects.maybe_open_issue(name=issue.name)
+        self.assertEqual(IssueStatus.Open.value, Issue.objects.get(pk=issue.pk).status)
+        self.assertEqual(1, Issue.objects.get(name=issue.name))
+
+    def test_resolve_open_issue(self):
+        a = G(Assertion)
+        issue = G(Issue, name=a.name, status=IssueStatus.Open.value)
+        a._resolve_open_issue()
+        self.assertEqual(IssueStatus.Resolved.value, Issue.objects.get(pk=issue.pk).status)
+
 
 class ModelIssueManagerTests(TestCase):
     def test_replace_record_with_content_type(self):
