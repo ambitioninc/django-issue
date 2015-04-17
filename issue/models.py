@@ -84,9 +84,9 @@ class IssueManager(ManagerUtilsManager):
         1) It is already open
         2) It already exists and is marked as Wont_fix
         """
-        if not self.issue_exists(name=name, **kwargs):
+        if not self.issue_exists(name=name):
             return self.create(name=name, **kwargs)
-        elif not self.is_wont_fix(name=name, **kwargs):
+        elif not self.is_wont_fix(name=name):
             return self.reopen_issue(name=name, **kwargs)
         return None
 
