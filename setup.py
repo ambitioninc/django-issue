@@ -35,6 +35,8 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Framework :: Django',
+        'Framework :: Django :: 1.6',
+        'Framework :: Django :: 1.7',
     ],
     license='MIT',
     install_requires=[
@@ -43,11 +45,11 @@ setup(
         'django-regex-field>=0.1.5',
         'enum34>=1.0',
         'jsonfield>=0.9.20',
-        'psycopg2',
-        'south>=1.0.2',
     ],
     tests_require=[
+        'psycopg2',
         'coverage>=3.7.1',
+        'south>=1.0.2',
         'django-dynamic-fixture>=1.7.0',
         'django-nose',
         'freezegun>=0.1.12',
