@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v1.0.4
+------
+* Remove south as a dependency
+
 v1.0.3
 ------
 * Tweak to the behavior of maybe_open_issue

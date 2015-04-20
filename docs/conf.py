@@ -12,7 +12,12 @@ from settings import configure_settings
 configure_settings()
 
 from django.utils.html import strip_tags
-from django.utils.encoding import force_unicode
+
+if sys.version_info.major > 2:
+    def force_unicode(arg):
+        return str(arg)
+else:
+    from django.utils.encoding import force_unicode
 
 
 def get_version():
