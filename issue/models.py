@@ -54,12 +54,6 @@ class IssueManager(ManagerUtilsManager):
         """
         return self.filter(status=IssueStatus.Open.value)
 
-    def issue_exists(self, **kwargs):
-        """
-        Does any issue of the given name exist?
-        """
-        return self.filter(**kwargs).exists()
-
     def reopen_issue(self, name, **kwargs):
         """
         Reopen the specified Issue.
@@ -139,14 +133,6 @@ class ModelIssueManager(IssueManager):
             )
 
         return kwargs
-
-    def issue_exists(self, *args, **kwargs):
-        """
-        Does an Issue of the given name exist?
-        """
-        kwargs = self._replace_record_with_content_type(kwargs)
-
-        return super(ModelIssueManager, self).issue_exists(*args, **kwargs)
 
     def reopen_issue(self, *args, **kwargs):
         """
