@@ -60,6 +60,52 @@ class IssueManagerTests(TestCase):
 
         self.assertTrue(Issue.objects.is_wont_fix(name=mi.name))
 
+    def test_maybe_open_issue_when_none_exists(self):
+        """
+        Verify that maybe_open_issue will create a new Issue when none like it exists.
+        """
+        (issue, created) = Issue.objects.maybe_open_issue(name='falafel')
+        self.assertTrue(created)
+        self.assertEqual(IssueStatus.Open.value, Issue.objects.get(name=issue.name).status)
+
+    def test_maybe_open_issue_when_it_is_marked_as_wont_fix(self):
+        """
+        Verify that maybe_open_issue will not create or return an Issue when it exists and
+        is marked as WONT_FIX.
+        """
+        issue = G(Issue, status=IssueStatus.Wont_fix.value)
+        self.assertEqual((None, False), Issue.objects.maybe_open_issue(name=issue.name))
+        self.assertEqual(IssueStatus.Wont_fix.value, Issue.objects.get(pk=issue.pk).status)
+        self.assertEqual(1, Issue.objects.filter(name=issue.name).count())
+
+    def test_maybe_open_issue_returns_already_open_issue(self):
+        """
+        Verify that maybe_open_issue will return a the extant Issue of hte provided name
+        when it is open.
+        """
+        issue = G(Issue, status=IssueStatus.Open.value)
+        (issue2, created) = Issue.objects.maybe_open_issue(name=issue.name)
+        self.assertFalse(created)
+        self.assertEqual(IssueStatus.Open.value, Issue.objects.get(pk=issue.pk).status)
+        self.assertEqual(1, Issue.objects.filter(name=issue.name).count())
+
+    def maybe_open_issue_when_it_is_marked_as_resolved(self):
+        """
+        Verify that maybe_open_issue will create a new issue when a Resolved one
+        exists with the same name.
+        """
+        issue = G(Issue, status=IssueStatus.Resolved.value)
+        (issue2, created) = Issue.objects.maybe_open_issue(name=issue.name)
+        self.assertTrue(created)
+        self.assertEqual(IssueStatus.Open.value, Issue.objects.get(pk=issue2.pk).status)
+        self.assertEqual(2, Issue.objects.get(name=issue2.name))
+
+    def test_resolve_open_issue(self):
+        a = G(Assertion)
+        issue = G(Issue, name=a.name, status=IssueStatus.Open.value)
+        a._resolve_open_issue()
+        self.assertEqual(IssueStatus.Resolved.value, Issue.objects.get(pk=issue.pk).status)
+
 
 class ModelIssueManagerTests(TestCase):
     def test_replace_record_with_content_type(self):
@@ -482,9 +528,9 @@ class AssertionTests(TestCase):
 
     def test__open_or_update_issue_when_it_is_marked_as_resolved(self):
         a = G(Assertion)
-        issue = G(Issue, name=a.name, status=IssueStatus.Resolved.value)
-        a._open_or_update_issue({})
-        self.assertEqual(IssueStatus.Open.value, Issue.objects.get(pk=issue.pk).status)
+        G(Issue, name=a.name, status=IssueStatus.Resolved.value)
+        issue2 = a._open_or_update_issue({})
+        self.assertEqual(IssueStatus.Open.value, Issue.objects.get(pk=issue2.pk).status)
 
     def test_resolve_open_issue(self):
         a = G(Assertion)

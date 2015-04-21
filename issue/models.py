@@ -54,17 +54,12 @@ class IssueManager(ManagerUtilsManager):
         """
         return self.filter(status=IssueStatus.Open.value)
 
-    def issue_exists(self, **kwargs):
-        """
-        Does any issue of the given name exist?
-        """
-        return self.filter(**kwargs).exists()
-
-    def reopen_issue(self, **kwargs):
+    def reopen_issue(self, name, **kwargs):
         """
         Reopen the specified Issue.
         """
-        self.filter(**kwargs).update(status=IssueStatus.Open.value)
+        kwargs['status'] = IssueStatus.Open.value
+        self.filter(name=name).update(**kwargs)
 
     def is_wont_fix(self, **kwargs):
         """
@@ -77,6 +72,25 @@ class IssueManager(ManagerUtilsManager):
         Resolve the specified issue.
         """
         self.filter(**kwargs).update(status=IssueStatus.Resolved.value)
+
+    def maybe_open_issue(self, name, **kwargs):
+        """
+        Create the specified Issue unless:
+        1) It is already open - if so, return it
+        2) It already exists and is marked as Wont_fix
+
+        Returns a tuple (Issue, Boolean) containing the Issue and if it was created.
+        """
+        if self.filter(name=name, status=IssueStatus.Wont_fix.value).exists():
+            # Exists but is Wont_fix
+            return None, False
+
+        if self.filter(name=name, status=IssueStatus.Open.value).exists():
+            # Exists and is Open
+            return self.filter(name=name, status=IssueStatus.Open.value).latest('creation_time'), False
+
+        # Either an Issue of this name doesn't exist or it is Resolved; either way, create one!
+        return self.create(name=name, **kwargs), True
 
 
 @six.python_2_unicode_compatible
@@ -119,14 +133,6 @@ class ModelIssueManager(IssueManager):
             )
 
         return kwargs
-
-    def issue_exists(self, *args, **kwargs):
-        """
-        Does an Issue of the given name exist?
-        """
-        kwargs = self._replace_record_with_content_type(kwargs)
-
-        return super(ModelIssueManager, self).issue_exists(*args, **kwargs)
 
     def reopen_issue(self, *args, **kwargs):
         """
@@ -340,13 +346,7 @@ class BaseAssertion(models.Model):
         """
         Open (or re-open) an issue with the name unless one exists with a status of Wont_fix.
         """
-        obj_man = self.issue_class.objects
-
-        if not obj_man.issue_exists(name=self.name, **kwargs):
-            return obj_man.create(name=self.name, **kwargs)
-
-        elif not obj_man.is_wont_fix(name=self.name, **kwargs):
-            return obj_man.reopen_issue(name=self.name, **kwargs)
+        return self.issue_class.objects.maybe_open_issue(self.name, **kwargs)[0]
 
     def _resolve_open_issue(self, **kwargs):
         """
