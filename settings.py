@@ -1,6 +1,5 @@
 import os
 
-import django
 from django.conf import settings
 
 
@@ -45,7 +44,9 @@ def configure_settings():
                 'django.contrib.admin',
                 'issue',
                 'issue.tests',
-            ) + (('south',) if django.VERSION[1] <= 6 else ()),
+            ),
             ROOT_URLCONF='issue.urls',
             DEBUG=False,
+            TEST_RUNNER='django_nose.NoseTestSuiteRunner',
+            NOSE_ARGS=['--nocapture', '--nologcapture', '--verbosity=1'],
         )

@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v1.1.0
+------
+* Django 1.8 support and removal of 1.6 support
+
 v1.0.5
 ------
 * Additional tweak to the behavior of maybe_open_issue
