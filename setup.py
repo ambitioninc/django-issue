@@ -54,11 +54,7 @@ setup(
         'django-nose>=1.4',
         'freezegun>=0.1.12',
         'mock==1.0.1',
-        'ipdb>=0.8',
-        'ipdbplugin>=1.4',
         'six>=1.8.0',
-        # dynamic fixture is requiring this and 4.1.1 is breaking tests
-        'ipython<4.1',
     ],
     test_suite='run_tests.run_tests',
     include_package_data=True,
