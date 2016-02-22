@@ -2,7 +2,7 @@ from copy import copy
 from datetime import datetime, timedelta
 import json
 
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.module_loading import import_by_path
@@ -172,7 +172,7 @@ class ModelIssue(BaseIssue):
     """
     record_type = models.ForeignKey(ContentType, related_name='+', null=True)
     record_id = models.PositiveIntegerField(default=0)
-    record = generic.GenericForeignKey('record_type', 'record_id')
+    record = GenericForeignKey('record_type', 'record_id')
 
     objects = ModelIssueManager()
 

@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v1.2.0
+------
+* Django 1.9 support
+
 v1.1.0
 ------
 * Django 1.8 support and removal of 1.6 support
