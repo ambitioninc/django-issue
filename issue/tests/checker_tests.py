@@ -38,7 +38,7 @@ class CheckAssertionsTests(TestCase):
 
 
 class RespondToIssuesTests(TestCase):
-    @patch.object(Responder, 'respond', spec_set=True)
+    @patch.object(Responder, 'respond')
     def test_respond_to_issues_checks_issues_and_model_issues(self, respond):
         # Setup the scenario
         i = Issue.objects.create(name='an-issue')

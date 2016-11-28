@@ -502,7 +502,7 @@ class AssertionTests(TestCase):
         self.assertTrue(assertion.check_assertion())
         self.assertTrue(resolve_open_issue.called)
 
-    @patch.object(Assertion, '_open_or_update_issue', spec_set=True)
+    @patch.object(Assertion, '_open_or_update_issue')
     @patch('issue.models.load_function', spec_set=True)
     def test_check_when_all_is_not_well(self, load_function, open_or_update_issue):
         issue_details = {
