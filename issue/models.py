@@ -9,7 +9,7 @@ from django.utils.module_loading import import_string
 from enum import Enum
 from jsonfield import JSONField
 from manager_utils import ManagerUtilsManager
-from regex_field import RegexField
+from regex_field.field import RegexField
 
 
 #######################################################
