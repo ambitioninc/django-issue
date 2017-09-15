@@ -1,8 +1,8 @@
+# import multiprocessing to avoid this bug (http://bugs.python.org/issue15881#msg170215)
+import multiprocessing
 import re
 from setuptools import setup, find_packages
 
-# import multiprocessing to avoid this bug (http://bugs.python.org/issue15881#msg170215)
-import multiprocessing
 assert multiprocessing
 
 
@@ -33,17 +33,19 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Framework :: Django',
-        'Framework :: Django :: 1.8',
         'Framework :: Django :: 1.9',
+        'Framework :: Django :: 1.10',
+        'Framework :: Django :: 1.11',
     ],
     license='MIT',
     install_requires=[
-        'Django>=1.8',
-        'django-manager-utils>=0.12.0',
+        'Django>=1.9',
+        'django-manager-utils>=0.13.0',
         'django-regex-field>=0.2.0',
         'enum34>=1.0',
         'jsonfield>=0.9.20',
@@ -51,10 +53,10 @@ setup(
     tests_require=[
         'psycopg2',
         'coverage>=3.7.1',
-        'django-dynamic-fixture>=1.7.0',
+        'django-dynamic-fixture',
         'django-nose>=1.4',
         'freezegun>=0.1.12',
-        'mock>=1.0.1',
+        'mock',
         'six>=1.8.0',
     ],
     test_suite='run_tests.run_tests',
