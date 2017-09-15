@@ -46,7 +46,7 @@ setup(
     install_requires=[
         'Django>=1.9',
         'django-manager-utils>=0.13.0',
-        'django-regex-field>=0.2.0',
+        'django-regex-field>=0.3.0',
         'enum34>=1.0',
         'jsonfield>=0.9.20',
     ],
