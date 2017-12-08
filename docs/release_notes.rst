@@ -1,6 +1,14 @@
 Release Notes
 =============
 
+v2.0.0
+------
+* Remove python 2.7 support
+* Remove python 3.4 support
+* Remove Django 1.9 support
+* Remove Django 1.10 support
+* Add Django 2.0 support
+
 v1.4.0
 ------
 * Python 3.6 support
