@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from django.db import models, migrations
 import jsonfield.fields
 import regex_field.fields
+import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
@@ -47,7 +48,7 @@ class Migration(migrations.Migration):
                 ('execution_time', models.DateTimeField(auto_now_add=True)),
                 ('success', models.BooleanField(default=True)),
                 ('details', jsonfield.fields.JSONField(null=True, blank=True)),
-                ('issue', models.ForeignKey(to='issue.Issue', related_name='executed_actions')),
+                ('issue', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='issue.Issue', related_name='executed_actions')),
             ],
             options={
             },
@@ -59,7 +60,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
                 ('check_function', models.TextField()),
                 ('name', models.TextField()),
-                ('model_type', models.ForeignKey(to='contenttypes.ContentType', related_name='+')),
+                ('model_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contenttypes.ContentType', related_name='+')),
             ],
             options={
                 'abstract': False,
@@ -76,7 +77,7 @@ class Migration(migrations.Migration):
                 ('status', models.IntegerField(choices=[(0, 'Open'), (1, 'Resolved'), (2, 'Wont_fix')], default=0)),
                 ('resolved_time', models.DateTimeField(null=True, blank=True)),
                 ('record_id', models.PositiveIntegerField(default=0)),
-                ('record_type', models.ForeignKey(null=True, related_name='+', to='contenttypes.ContentType')),
+                ('record_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, null=True, related_name='+', to='contenttypes.ContentType')),
             ],
             options={
                 'abstract': False,
@@ -100,7 +101,7 @@ class Migration(migrations.Migration):
                 ('delay_sec', models.IntegerField()),
                 ('target_function', models.TextField()),
                 ('function_kwargs', jsonfield.fields.JSONField(default={})),
-                ('responder', models.ForeignKey(to='issue.Responder', related_name='actions')),
+                ('responder', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='issue.Responder', related_name='actions')),
             ],
             options={
             },
@@ -109,7 +110,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='issueaction',
             name='responder_action',
-            field=models.ForeignKey(to='issue.ResponderAction'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='issue.ResponderAction'),
             preserve_default=True,
         ),
     ]

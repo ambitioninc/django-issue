@@ -170,7 +170,7 @@ class ModelIssue(BaseIssue):
     """
     An issue involving a particular entry in the database.
     """
-    record_type = models.ForeignKey(ContentType, related_name='+', null=True)
+    record_type = models.ForeignKey(ContentType, related_name='+', null=True, on_delete=models.CASCADE)
     record_id = models.PositiveIntegerField(default=0)
     record = GenericForeignKey('record_type', 'record_id')
 
@@ -182,8 +182,8 @@ class IssueAction(models.Model):
     """
     A response that was taken to address a particular issue.
     """
-    issue = models.ForeignKey(Issue, related_name='executed_actions')
-    responder_action = models.ForeignKey('issue.ResponderAction')
+    issue = models.ForeignKey(Issue, related_name='executed_actions', on_delete=models.CASCADE)
+    responder_action = models.ForeignKey('issue.ResponderAction', on_delete=models.CASCADE)
     execution_time = models.DateTimeField(auto_now_add=True)
     success = models.BooleanField(default=True)
     details = JSONField(null=True, blank=True)
@@ -256,7 +256,7 @@ class ResponderAction(models.Model):
     Any function can be specified in the target_function field, though some initial
     helpers are defined in issue.actions
     """
-    responder = models.ForeignKey(Responder, related_name='actions')
+    responder = models.ForeignKey(Responder, related_name='actions', on_delete=models.CASCADE)
 
     # 'buffer' period between this action and the next.
     delay_sec = models.IntegerField()
@@ -365,7 +365,7 @@ class ModelAssertion(BaseAssertion):
 
     An Issue is created for any record for which the assertion fails.
     """
-    model_type = models.ForeignKey(ContentType, related_name='+')
+    model_type = models.ForeignKey(ContentType, related_name='+', on_delete=models.CASCADE)
 
     @property
     def issue_class(self):
