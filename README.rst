@@ -4,11 +4,11 @@
 .. image:: https://coveralls.io/repos/ambitioninc/django-issue/badge.png?branch=develop
     :target: https://coveralls.io/r/ambitioninc/django-issue?branch=develop
 
-.. image:: https://pypip.in/v/django-issue/badge.png
+.. image:: https://img.shields.io/pypi/v/django-issue.svg
     :target: https://pypi.python.org/pypi/django-issue/
     :alt: Latest PyPI version
 
-.. image:: https://pypip.in/d/django-issue/badge.png
+.. image:: https://img.shields.io/pypi/dm/django-issue.svg
     :target: https://pypi.python.org/pypi/django-issue/
     :alt: Number of PyPI downloads
 
