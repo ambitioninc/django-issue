@@ -4,10 +4,10 @@ import json
 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.module_loading import import_string
 from enum import Enum
-from jsonfield import JSONField
 from manager_utils import ManagerUtilsManager
 from regex_field.fields import RegexField
 
