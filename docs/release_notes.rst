@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+v3.0.0
+------
+* Add tox to support more versions
+* Upgrade to django's JSONField
+
 v2.0.0
 ------
 * Remove python 2.7 support
