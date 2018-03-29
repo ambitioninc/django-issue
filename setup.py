@@ -45,8 +45,8 @@ setup(
     license='MIT',
     install_requires=[
         'Django>=1.10',
-        'django-manager-utils>=1.0.0',
-        'django-regex-field>=1.0.0',
+        'django-manager-utils>=1.1.1',
+        'django-regex-field>=1.1.0',
         'enum34>=1.0',
         'jsonfield>=0.9.20',
     ],
