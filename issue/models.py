@@ -5,6 +5,7 @@ import json
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import JSONField
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.utils.module_loading import import_string
 from enum import Enum
@@ -96,7 +97,7 @@ class IssueManager(ManagerUtilsManager):
 @six.python_2_unicode_compatible
 class BaseIssue(models.Model):
     name = models.TextField()
-    details = JSONField(null=True, blank=True)
+    details = JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
     creation_time = models.DateTimeField(auto_now_add=True)
     status = models.IntegerField(choices=IssueStatus.choices(), default=IssueStatus.Open.value)
     resolved_time = models.DateTimeField(null=True, blank=True)
@@ -186,7 +187,7 @@ class IssueAction(models.Model):
     responder_action = models.ForeignKey('issue.ResponderAction', on_delete=models.CASCADE)
     execution_time = models.DateTimeField(auto_now_add=True)
     success = models.BooleanField(default=True)
-    details = JSONField(null=True, blank=True)
+    details = JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
 
     def __str__(self):
         return (
@@ -263,7 +264,7 @@ class ResponderAction(models.Model):
 
     # What action do we want to occur
     target_function = models.TextField()
-    function_kwargs = JSONField(default={})
+    function_kwargs = JSONField(default={}, encoder=DjangoJSONEncoder)
 
     def __str__(self):
         return 'ResponderAction: {responder} - {target_function} - {function_kwargs}'.format(
