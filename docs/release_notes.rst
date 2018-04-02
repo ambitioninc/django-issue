@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v3.1.0
+------
+* json field encoder (drop support for django 1.10)
+
 v3.0.0
 ------
 * Add tox to support more versions
