@@ -264,7 +264,7 @@ class ResponderAction(models.Model):
 
     # What action do we want to occur
     target_function = models.TextField()
-    function_kwargs = JSONField(default={}, encoder=DjangoJSONEncoder)
+    function_kwargs = JSONField(default=dict, encoder=DjangoJSONEncoder)
 
     def __str__(self):
         return 'ResponderAction: {responder} - {target_function} - {function_kwargs}'.format(

@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v3.1.2
+------
+* Fix django warning related to JSONField default value
+
 v3.1.1
 ------
 * Remove 1.10 from setup file
