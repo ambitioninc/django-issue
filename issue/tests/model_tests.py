@@ -189,7 +189,7 @@ class ResponderTests(TestCase):
         # Setup the scenario
         target_function = 'do'
         issue = G(Issue, name='error-42')
-        responder = G(Responder, issue=issue, watch_pattern='error-\d+')
+        responder = G(Responder, issue=issue, watch_pattern=r'error-\d+')
         G(ResponderAction, responder=responder, target_function=target_function, delay_sec=0)
 
         # Run the code
@@ -203,7 +203,7 @@ class ResponderTests(TestCase):
     def test_respond_ignores_non_watching_pattern(self, load_function):
         # Setup the scenario
         issue = G(Issue, name='success')
-        responder = G(Responder, issue=issue, watch_pattern='error-\d+')
+        responder = G(Responder, issue=issue, watch_pattern=r'error-\d+')
         G(ResponderAction, responder=responder, target_function='do')
 
         # Run the code
