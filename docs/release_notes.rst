@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v3.2.0
+------
+* Python 3.7
+* Django 2.1
+* Django 2.2
+* Remove older python and django support
+
 v3.1.2
 ------
 * Fix django warning related to JSONField default value
