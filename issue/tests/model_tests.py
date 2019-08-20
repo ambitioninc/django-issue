@@ -169,7 +169,9 @@ class IssueTests(TestCase):
 
 class IssueActionTests(TestCase):
     def test__str__(self):
-        ia = N(IssueAction)
+        r = G(Responder, watch_pattern='foo')
+        ra = G(ResponderAction, responder=r)
+        ia = N(IssueAction, responder_action=ra)
         self.assertEqual(
             'IssueResponse: {self.issue.name} - {self.responder_action} - '
             '{self.success} at {self.execution_time}'.format(self=ia),
@@ -233,7 +235,7 @@ class ResponderTests(TestCase):
         # Setup the scenario
         now = datetime(2014, 8, 11, 15, 0, 0)
         delta = timedelta(minutes=30)
-        r = G(Responder)
+        r = G(Responder, allow_retry=False)
         ra = G(ResponderAction, responder=r, delay_sec=delta.total_seconds())
         issue = G(Issue, creation_time=now - (delta * 2))
         G(IssueAction, issue=issue, responder_action=ra)
@@ -396,14 +398,53 @@ class ResponderTests(TestCase):
             json.dumps(str(Exception('what-an-exceptional-message'))),
             IssueAction.objects.get(issue=issue, responder_action=ra2).details)
 
+    @patch('issue.models.load_function', spec_set=True)
+    def test_allow_retry(self, load_function):
+        """
+        Confirms that responders that are configured to allow retry will not be restricted
+        by previous IssueActions
+        """
+        # Setup the scenario
+        issue = G(Issue)
+        responder = G(Responder, allow_retry=True)
+        # Note: we don't care what the target_function path is since we patch the load_function function
+        ra = G(ResponderAction, responder=responder, delay_sec=0)
+        ra2 = G(ResponderAction, responder=responder, delay_sec=0)
+
+        self.do_call_time = None
+        self.do_2_call_time = None
+
+        def do_1(*args, **kwargs):
+            self.do_call_time = datetime.utcnow()
+            return True
+
+        def do_2(*args, **kwargs):
+            self.do_2_call_time = datetime.utcnow()
+            return True
+
+        load_function.side_effect = [do_1, do_2]
+
+        # attempt to respond
+        responder._execute(issue)
+
+        # Verify expectations
+        self.assertEqual(2, IssueAction.objects.count())
+        self.assertTrue(IssueAction.objects.filter(issue=issue, responder_action=ra).exists())
+        self.assertTrue(IssueAction.objects.filter(issue=issue, responder_action=ra2).exists())
+
+        # run again
+        responder._execute(issue)
+        self.assertEqual(4, IssueAction.objects.count())
+
 
 class ResponderActionTests(TestCase):
     def test__str__(self):
-        r = G(ResponderAction)
+        r = G(Responder, watch_pattern='foo')
+        ra = G(ResponderAction, responder=r)
         self.assertEqual(
             'ResponderAction: {responder} - {target_function} - {function_kwargs}'.format(
-                responder=r.responder, target_function=r.target_function, function_kwargs=r.function_kwargs),
-            str(r)
+                responder=ra.responder, target_function=ra.target_function, function_kwargs=ra.function_kwargs),
+            str(ra)
         )
 
     def test_is_time_to_execute(self):

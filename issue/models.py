@@ -214,6 +214,8 @@ class Responder(models.Model):
     Responder record.
     """
     watch_pattern = RegexField(null=True, max_length=128)
+    # whether to allow responder to respond, even when actions were already executed for a given issue
+    allow_retry = models.BooleanField(default=False)
 
     def __str__(self):
         return 'Responder: {watch_pattern.pattern}'.format(watch_pattern=self.watch_pattern)
@@ -244,8 +246,13 @@ class Responder(models.Model):
             ])
 
     def _get_pending_actions_for_issue(self, issue):
+        """
+        Determine which actions should be executed for the given issue
+        """
+        if self.allow_retry:
+            return self.actions.order_by('delay_sec')
+        # exclude actions that have already been executed for the given issue
         already_executed_action_pks = issue.executed_actions.values_list('responder_action__pk', flat=True).all()
-
         return self.actions.exclude(pk__in=already_executed_action_pks).order_by('delay_sec')
 
 
