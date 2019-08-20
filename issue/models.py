@@ -202,7 +202,7 @@ class IssueAction(models.Model):
 
     def __str__(self):
         return (
-            'IssueResponse: {self.issue.name} - {self.responder_action} - '
+            'IssueResponse: {self.action_issue.name} - {self.responder_action} - '
             '{self.success} at {self.execution_time}'.format(self=self)
         )
 
