@@ -2,7 +2,7 @@ from copy import copy
 from datetime import datetime, timedelta
 import json
 
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import JSONField
 from django.core.serializers.json import DjangoJSONEncoder
@@ -104,6 +104,13 @@ class BaseIssue(models.Model):
 
     objects = IssueManager()
 
+    executed_actions = GenericRelation(
+        'issue.IssueAction',
+        content_type_field='action_issue_type',
+        object_id_field='action_issue_id',
+        related_query_name='+'
+    )
+
     class Meta:
         abstract = True
 
@@ -183,7 +190,11 @@ class IssueAction(models.Model):
     """
     A response that was taken to address a particular issue.
     """
-    issue = models.ForeignKey(Issue, related_name='executed_actions', on_delete=models.CASCADE)
+    # deprecated for generic issue relation
+    issue = models.ForeignKey(Issue, related_name='+', null=True, on_delete=models.CASCADE)
+    action_issue_type = models.ForeignKey(ContentType, related_name='+', null=True, on_delete=models.CASCADE)
+    action_issue_id = models.PositiveIntegerField(null=True)
+    action_issue = GenericForeignKey('action_issue_type', 'action_issue_id')
     responder_action = models.ForeignKey('issue.ResponderAction', on_delete=models.CASCADE)
     execution_time = models.DateTimeField(auto_now_add=True)
     success = models.BooleanField(default=True)
@@ -297,7 +308,11 @@ class ResponderAction(models.Model):
         except Exception as e:
             kwargs = self.construct_issue_action_kwargs(False, str(e))
 
-        return IssueAction(issue=issue, **kwargs)
+        return IssueAction(
+            action_issue_id=issue.id,
+            action_issue_type=ContentType.objects.get_for_model(issue),
+            **kwargs
+        )
 
     def construct_issue_action_kwargs(self, success, failure_details=None):
         """
