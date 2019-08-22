@@ -169,19 +169,19 @@ class IssueTests(TestCase):
 
 class IssueActionTests(TestCase):
     def test__str__(self):
-        i = G(Issue, name='bar')
-        r = G(Responder, watch_pattern='foo')
-        ra = G(ResponderAction, responder=r)
-        ia = N(
+        issue = G(Issue, name='bar')
+        responder = G(Responder, watch_pattern='foo')
+        responder_action = G(ResponderAction, responder=responder)
+        issue_action = N(
             IssueAction,
-            responder_action=ra,
+            responder_action=responder_action,
             action_issue_type=ContentType.objects.get_for_model(Issue),
-            action_issue_id=i.id
+            action_issue_id=issue.id
         )
         self.assertEqual(
             'IssueResponse: {self.action_issue.name} - {self.responder_action} - '
-            '{self.success} at {self.execution_time}'.format(self=ia),
-            str(ia)
+            '{self.success} at {self.execution_time}'.format(self=issue_action),
+            str(issue_action)
         )
 
 
@@ -241,18 +241,18 @@ class ResponderTests(TestCase):
         # Setup the scenario
         now = datetime(2014, 8, 11, 15, 0, 0)
         delta = timedelta(minutes=30)
-        r = G(Responder, allow_retry=False)
-        ra = G(ResponderAction, responder=r, delay_sec=delta.total_seconds())
+        responder = G(Responder, allow_retry=False)
+        responder_action = G(ResponderAction, responder=responder, delay_sec=delta.total_seconds())
         issue = G(Issue, creation_time=now - (delta * 2))
         G(
             IssueAction,
             action_issue_id=issue.id,
             action_issue_type=ContentType.objects.get_for_model(Issue),
-            responder_action=ra
+            responder_action=responder_action
         )
 
         # Run the code and verify expectation
-        self.assertFalse(r._get_pending_actions_for_issue(issue).exists())
+        self.assertFalse(responder._get_pending_actions_for_issue(issue).exists())
 
     @patch('issue.models.load_function', spec_set=True)
     def test__execute_all_success(self, load_function):
@@ -339,13 +339,18 @@ class ResponderTests(TestCase):
         delta = timedelta(seconds=30)
         issue = G(Issue, creation_time=datetime.utcnow() - (2 * delta))
         responder = G(Responder, issue=issue)
-        ra = G(ResponderAction, responder=responder, delay_sec=0, target_function='do_1')
-        ra2 = G(ResponderAction, responder=responder, delay_sec=delta.total_seconds(), target_function='do_2')
+        responder_action = G(ResponderAction, responder=responder, delay_sec=0, target_function='do_1')
+        responder_action2 = G(
+            ResponderAction,
+            responder=responder,
+            delay_sec=delta.total_seconds(),
+            target_function='do_2'
+        )
         G(
             IssueAction,
             action_issue_id=issue.id,
             action_issue_type=ContentType.objects.get_for_model(Issue),
-            responder_action=ra
+            responder_action=responder_action
         )
 
         self.do_called = False
@@ -368,8 +373,18 @@ class ResponderTests(TestCase):
         self.assertFalse(self.do_called)
         self.assertTrue(self.do_2_called)
 
-        self.assertTrue(IssueAction.objects.filter(action_issue_id=issue.id, responder_action=ra).exists())
-        self.assertTrue(IssueAction.objects.filter(action_issue_id=issue.id, responder_action=ra2).exists())
+        self.assertTrue(
+            IssueAction.objects.filter(
+                action_issue_id=issue.id,
+                responder_action=responder_action
+            ).exists()
+        )
+        self.assertTrue(
+            IssueAction.objects.filter(
+                action_issue_id=issue.id,
+                responder_action=responder_action2
+            ).exists()
+        )
 
     @patch('issue.models.load_function', spec_set=True)
     def test__execute_failure_does_not_stop_other_actions(self, load_function):
@@ -424,8 +439,8 @@ class ResponderTests(TestCase):
         issue = G(Issue)
         responder = G(Responder, allow_retry=True)
         # Note: we don't care what the target_function path is since we patch the load_function function
-        ra = G(ResponderAction, responder=responder, delay_sec=0)
-        ra2 = G(ResponderAction, responder=responder, delay_sec=0)
+        responder_action = G(ResponderAction, responder=responder, delay_sec=0)
+        responder_action2 = G(ResponderAction, responder=responder, delay_sec=0)
 
         self.do_call_time = None
         self.do_2_call_time = None
@@ -445,8 +460,18 @@ class ResponderTests(TestCase):
 
         # Verify expectations
         self.assertEqual(2, IssueAction.objects.count())
-        self.assertTrue(IssueAction.objects.filter(action_issue_id=issue.id, responder_action=ra).exists())
-        self.assertTrue(IssueAction.objects.filter(action_issue_id=issue.id, responder_action=ra2).exists())
+        self.assertTrue(
+            IssueAction.objects.filter(
+                action_issue_id=issue.id,
+                responder_action=responder_action
+            ).exists()
+        )
+        self.assertTrue(
+            IssueAction.objects.filter(
+                action_issue_id=issue.id,
+                responder_action=responder_action2
+            ).exists()
+        )
 
         # run again
         responder._execute(issue)
@@ -455,12 +480,15 @@ class ResponderTests(TestCase):
 
 class ResponderActionTests(TestCase):
     def test__str__(self):
-        r = G(Responder, watch_pattern='foo')
-        ra = G(ResponderAction, responder=r)
+        responder = G(Responder, watch_pattern='foo')
+        responder_action = G(ResponderAction, responder=responder)
         self.assertEqual(
             'ResponderAction: {responder} - {target_function} - {function_kwargs}'.format(
-                responder=ra.responder, target_function=ra.target_function, function_kwargs=ra.function_kwargs),
-            str(ra)
+                responder=responder_action.responder,
+                target_function=responder_action.target_function,
+                function_kwargs=responder_action.function_kwargs
+            ),
+            str(responder_action)
         )
 
     def test_is_time_to_execute(self):
