@@ -42,7 +42,7 @@ setup(
     ],
     license='MIT',
     install_requires=[
-        'Django>=2.0',
+        'Django>=2.0,<3.0',
         'django-manager-utils>=1.4.0',
         'django-regex-field>=1.3.1',
         'jsonfield>=0.9.20',
