@@ -8,8 +8,6 @@ python:
 
 env:
   matrix:
-    - DJANGO=2.0
-    - DJANGO=2.1
     - DJANGO=2.2
     - DJANGO=master
 
@@ -17,9 +15,6 @@ addons:
   postgresql: '9.6'
 
 matrix:
-  exclude:
-    - { python: "3.7", env: DJANGO=2.0 }
-
   include:
     - { python: "3.6", env: TOXENV=flake8 }
 
