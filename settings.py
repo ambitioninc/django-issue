@@ -84,4 +84,5 @@ def configure_settings():
             ROOT_URLCONF='issue.urls',
             DEBUG=False,
             SECRET_KEY='dj-i-s-s-u-e',
+            DEFAULT_AUTO_FIELD='django.db.models.AutoField',
         )
