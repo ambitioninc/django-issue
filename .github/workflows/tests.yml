@@ -18,7 +18,6 @@ jobs:
         # AttributeError: module 'collections' has no attribute 'Callable'
         # https://github.com/nose-devs/nose/issues/1099
         django:
-          - 'Django~=2.2.0'
           - 'Django~=3.2.0'
           - 'Django~=4.0.0'
           - 'Django~=4.1.0'
@@ -32,10 +31,6 @@ jobs:
             # have this feature, similar to Travis' allow-failure, yet.
             # https://github.com/actions/toolkit/issues/399
         exclude:
-          - python: '3.8'
-            django: 'Django~=2.2.0'
-          - python: '3.9'
-            django: 'Django~=2.2.0'
 #          - python: '3.10'
 #            django: 'Django~=2.2.0'
 #          - python: '3.11'
