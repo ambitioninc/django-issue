@@ -16,7 +16,6 @@ from regex_field.fields import RegexField
 #######################################################
 # Misc Utils
 #######################################################
-import six
 
 
 def load_function(dotted_path):
@@ -94,7 +93,6 @@ class IssueManager(ManagerUtilsManager):
         return self.create(name=name, **kwargs), True
 
 
-@six.python_2_unicode_compatible
 class BaseIssue(models.Model):
     name = models.TextField()
     details = JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
@@ -185,7 +183,6 @@ class ModelIssue(BaseIssue):
     objects = ModelIssueManager()
 
 
-@six.python_2_unicode_compatible
 class IssueAction(models.Model):
     """
     A response that was taken to address a particular issue.
@@ -210,7 +207,6 @@ class IssueAction(models.Model):
 #######################################################
 # Issue Response models
 #######################################################
-@six.python_2_unicode_compatible
 class Responder(models.Model):
     """
     When an Issue is created, there is often an appropriate response.
@@ -267,7 +263,6 @@ class Responder(models.Model):
         return self.actions.exclude(pk__in=already_executed_action_pks).order_by('delay_sec')
 
 
-@six.python_2_unicode_compatible
 class ResponderAction(models.Model):
     """
     A particular action to take in response to some Issue.
