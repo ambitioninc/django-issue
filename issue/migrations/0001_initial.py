@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import jsonfield.fields
 import regex_field.fields
 import django.db.models.deletion
 
@@ -31,7 +30,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
                 ('name', models.TextField()),
-                ('details', jsonfield.fields.JSONField(null=True, blank=True)),
+                ('details', models.JSONField(null=True, blank=True)),
                 ('creation_time', models.DateTimeField(auto_now_add=True)),
                 ('status', models.IntegerField(choices=[(0, 'Open'), (1, 'Resolved'), (2, 'Wont_fix')], default=0)),
                 ('resolved_time', models.DateTimeField(null=True, blank=True)),
@@ -47,7 +46,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
                 ('execution_time', models.DateTimeField(auto_now_add=True)),
                 ('success', models.BooleanField(default=True)),
-                ('details', jsonfield.fields.JSONField(null=True, blank=True)),
+                ('details', models.JSONField(null=True, blank=True)),
                 ('issue', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='issue.Issue', related_name='executed_actions')),
             ],
             options={
@@ -72,7 +71,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
                 ('name', models.TextField()),
-                ('details', jsonfield.fields.JSONField(null=True, blank=True)),
+                ('details', models.JSONField(null=True, blank=True)),
                 ('creation_time', models.DateTimeField(auto_now_add=True)),
                 ('status', models.IntegerField(choices=[(0, 'Open'), (1, 'Resolved'), (2, 'Wont_fix')], default=0)),
                 ('resolved_time', models.DateTimeField(null=True, blank=True)),
@@ -100,7 +99,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(serialize=False, auto_created=True, verbose_name='ID', primary_key=True)),
                 ('delay_sec', models.IntegerField()),
                 ('target_function', models.TextField()),
-                ('function_kwargs', jsonfield.fields.JSONField(default={})),
+                ('function_kwargs', models.JSONField(default={})),
                 ('responder', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='issue.Responder', related_name='actions')),
             ],
             options={

@@ -2,7 +2,7 @@
 
 import django.contrib.postgres.fields.jsonb
 import django.core.serializers.json
-from django.db import migrations
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='responderaction',
             name='function_kwargs',
-            field=django.contrib.postgres.fields.jsonb.JSONField(default=dict, encoder=django.core.serializers.json.DjangoJSONEncoder),
+            field=models.JSONField(default=dict, encoder=django.core.serializers.json.DjangoJSONEncoder),
         ),
     ]
