@@ -7,6 +7,8 @@ def configure_settings():
     """
     Configures settings for manage.py and for run_tests.py.
     """
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
+
     if not settings.configured:
         # Determine the database settings depending on if a test_db var is set in CI mode or not
         test_db = os.environ.get('DB', None)
@@ -14,15 +16,17 @@ def configure_settings():
             db_config = {
                 'ENGINE': 'django.db.backends.postgresql',
                 'NAME': 'ambition_dev',
-                'USER': 'ambition_dev',
-                'PASSWORD': 'ambition_dev',
+                'USER': 'postgres',
+                'PASSWORD': '',
                 'HOST': 'db'
             }
         elif test_db == 'postgres':
             db_config = {
                 'ENGINE': 'django.db.backends.postgresql',
-                'USER': 'postgres',
                 'NAME': 'issue',
+                'USER': 'postgres',
+                'PASSWORD': '',
+                'HOST': 'db',
             }
         elif test_db == 'sqlite':
             db_config = {
@@ -83,6 +87,6 @@ def configure_settings():
             TEMPLATES=templates,
             ROOT_URLCONF='issue.urls',
             DEBUG=False,
-            SECRET_KEY='dj-i-s-s-u-e',
+            SECRET_KEY='*',
             DEFAULT_AUTO_FIELD='django.db.models.AutoField',
         )
