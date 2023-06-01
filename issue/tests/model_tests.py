@@ -197,7 +197,7 @@ class ResponderTests(TestCase):
         # Setup the scenario
         target_function = 'do'
         issue = G(Issue, name='error-42')
-        responder = G(Responder, issue=issue, watch_pattern=r'error-\d+')
+        responder = G(Responder, watch_pattern=r'error-\d+')
         G(ResponderAction, responder=responder, target_function=target_function, delay_sec=0)
 
         # Run the code
@@ -211,7 +211,7 @@ class ResponderTests(TestCase):
     def test_respond_ignores_non_watching_pattern(self, load_function):
         # Setup the scenario
         issue = G(Issue, name='success')
-        responder = G(Responder, issue=issue, watch_pattern=r'error-\d+')
+        responder = G(Responder, watch_pattern=r'error-\d+')
         G(ResponderAction, responder=responder, target_function='do')
 
         # Run the code
@@ -258,7 +258,7 @@ class ResponderTests(TestCase):
     def test__execute_all_success(self, load_function):
         # Setup the scenario
         issue = G(Issue)
-        responder = G(Responder, issue=issue)
+        responder = G(Responder)
         # Note: we don't care what the target_function path is since we patch the load_function function
         ra = G(ResponderAction, responder=responder, delay_sec=0)
         ra2 = G(ResponderAction, responder=responder, delay_sec=0)
@@ -298,7 +298,7 @@ class ResponderTests(TestCase):
         # Setup the scenario
         delta = timedelta(seconds=30)
         issue = G(Issue, creation_time=datetime.utcnow() - (2 * delta))
-        responder = G(Responder, issue=issue)
+        responder = G(Responder)
         ra = G(ResponderAction, responder=responder, delay_sec=0, target_function='do_1')
         ra2 = G(ResponderAction, responder=responder, delay_sec=0, target_function='do_2')
         ra3 = G(ResponderAction, responder=responder, delay_sec=30, target_function='do_3')
@@ -338,7 +338,7 @@ class ResponderTests(TestCase):
         # Setup the scenario
         delta = timedelta(seconds=30)
         issue = G(Issue, creation_time=datetime.utcnow() - (2 * delta))
-        responder = G(Responder, issue=issue)
+        responder = G(Responder)
         responder_action = G(ResponderAction, responder=responder, delay_sec=0, target_function='do_1')
         responder_action2 = G(
             ResponderAction,
@@ -391,7 +391,7 @@ class ResponderTests(TestCase):
         # Setup the scenario
         delta = timedelta(seconds=30)
         issue = G(Issue, creation_time=datetime.utcnow() - (2 * delta))
-        responder = G(Responder, issue=issue)
+        responder = G(Responder)
         # Note: we don't care what the target_function path is since we patch the load_function function
         ra = G(ResponderAction, responder=responder, delay_sec=0)
         ra2 = G(ResponderAction, responder=responder, delay_sec=0)
