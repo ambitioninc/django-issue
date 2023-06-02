@@ -15,7 +15,7 @@ def configure_settings():
         if test_db is None:
             db_config = {
                 'ENGINE': 'django.db.backends.postgresql',
-                'NAME': 'ambition_dev',
+                'NAME': 'issue',
                 'USER': 'postgres',
                 'PASSWORD': '',
                 'HOST': 'db'
