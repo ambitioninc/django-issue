@@ -18,6 +18,13 @@ def get_version():
         raise RuntimeError('Unable to find version string in {0}.'.format(VERSION_FILE))
 
 
+def get_lines(file_path):
+    return open(file_path, 'r').read().split('\n')
+
+
+install_requires = get_lines('requirements/requirements.txt')
+tests_require = get_lines('requirements/requirements-testing.txt')
+
 setup(
     name='django-issue',
     version=get_version(),
@@ -42,18 +49,8 @@ setup(
         'Framework :: Django :: 4.2',
     ],
     license='MIT',
-    install_requires=[
-        'Django>=3.2,<5',
-        'django-manager-utils',
-        'django-regex-field',
-    ],
-    tests_require=[
-        'psycopg2',
-        'coverage',
-        'django-dynamic-fixture',
-        'django-nose>=1.4',
-        'flake8',
-    ],
+    install_requires=install_requires,
+    tests_require=tests_require,
     test_suite='run_tests.run_tests',
     include_package_data=True,
     zip_safe=False,

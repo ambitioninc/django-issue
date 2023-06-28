@@ -21,24 +21,14 @@ jobs:
           - 'Django~=3.2.0'
           - 'Django~=4.0.0'
           - 'Django~=4.1.0'
-            #        experimental: [false]
-            # include:
-            #        - python: '3.7'
-            #          django: 'https://github.com/django/django/archive/refs/heads/main.zip#egg=Django'
-            #          experimental: true
-            # NOTE this job will appear to pass even when it fails because of
-            # `continue-on-error: true`. Github Actions apparently does not
-            # have this feature, similar to Travis' allow-failure, yet.
-            # https://github.com/actions/toolkit/issues/399
+          - 'Django~=4.2.0'
         exclude:
-#          - python: '3.10'
-#            django: 'Django~=2.2.0'
-#          - python: '3.11'
-#            django: 'Django~=2.2.0'
           - python: '3.7'
             django: 'Django~=4.0.0'
           - python: '3.7'
             django: 'Django~=4.1.0'
+          - python: '3.7'
+            django: 'Django~=4.2.0'
     services:
       postgres:
         image: postgres:14.5
