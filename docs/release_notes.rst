@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v3.5.1
+------
+* Fix manifest
+
 v3.5.0
 ------
 * Python 3.8, 3.9
