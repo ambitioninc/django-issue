@@ -18,6 +18,13 @@ def get_version():
         raise RuntimeError('Unable to find version string in {0}.'.format(VERSION_FILE))
 
 
+def get_lines(file_path):
+    return open(file_path, 'r').read().split('\n')
+
+
+install_requires = get_lines('requirements/requirements.txt')
+tests_require = get_lines('requirements/requirements-testing.txt')
+
 setup(
     name='django-issue',
     version=get_version(),
@@ -30,32 +37,20 @@ setup(
     packages=find_packages(),
     classifiers=[
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Framework :: Django',
-        'Framework :: Django :: 2.0',
-        'Framework :: Django :: 2.1',
-        'Framework :: Django :: 2.2',
+        'Framework :: Django :: 3.2',
+        'Framework :: Django :: 4.1',
+        'Framework :: Django :: 4.2',
     ],
     license='MIT',
-    install_requires=[
-        'Django>=2.0,<3.0',
-        'django-manager-utils>=1.4.0',
-        'django-regex-field>=1.3.1',
-        'jsonfield>=0.9.20',
-    ],
-    tests_require=[
-        'psycopg2',
-        'coverage>=3.7.1',
-        'django-dynamic-fixture',
-        'django-nose>=1.4',
-        'freezegun>=0.1.12',
-        'mock',
-        'six>=1.8.0',
-    ],
+    install_requires=install_requires,
+    tests_require=tests_require,
     test_suite='run_tests.run_tests',
     include_package_data=True,
     zip_safe=False,
