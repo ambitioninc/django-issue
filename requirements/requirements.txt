@@ -1,0 +1,4 @@
+# Install requirements
+Django>=3.2
+django-manager-utils>=3.1.0
+django-regex-field>=3.1.0

@@ -1,7 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django_dynamic_fixture import G
-from mock import call, patch
+from unittest.mock import call, patch
 
 from issue.models import Assertion, Issue, ModelAssertion, ModelIssue, Responder
 from issue.check import check_assertions, respond_to_issues
