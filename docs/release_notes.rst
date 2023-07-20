@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v3.5.2
+------
+* Fix a migration discrepancy
+
 v3.5.1
 ------
 * Fix manifest
