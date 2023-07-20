@@ -1,6 +1,17 @@
 Release Notes
 =============
 
+v3.5.1
+------
+* Fix manifest
+
+v3.5.0
+------
+* Python 3.8, 3.9
+* Django 3.2, 4.0, 4.1, 4.2
+* Drop django 2.2
+* Drop python 3.6
+
 v3.2.0
 ------
 * Python 3.7
