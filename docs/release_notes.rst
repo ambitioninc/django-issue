@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v3.5.2
+------
+* Read the Docs config file v2
+
 v3.5.1
 ------
 * Fix manifest
