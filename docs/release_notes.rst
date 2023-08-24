@@ -1,8 +1,9 @@
 Release Notes
 =============
 
-v3.5.3
+v3.5.4
 ------
+* Fix a migration discrepancy
 * Read the Docs config file v2
 
 v3.5.1
