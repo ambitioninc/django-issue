@@ -1,7 +1,7 @@
 Release Notes
 =============
 
-v3.5.2
+v3.5.3
 ------
 * Read the Docs config file v2
 
